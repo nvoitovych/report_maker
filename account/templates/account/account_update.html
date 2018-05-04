@@ -1,0 +1,42 @@
+{% extends 'report_maker/base.html' %}
+
+{% load filters %}
+{% load staticfiles %}
+{% load static %}
+
+{% block title %}
+    Account Configurations
+{% endblock %}
+
+{%  block content %}
+
+<div class="col s12 m8 offset-m2">
+    <div class="card">
+        <div class="card-content" id="div-inside-div">
+            <div class="modal-header">
+                <h4 class="modal-title">Account Configurations</h4>
+            </div>
+            <br>
+            <div class="modal-body">
+                Ім'я користувача: {{ request.user.username }} <br><br>
+                Термін дії ліцензії: {{ request.user.account.start_date_of_license }} - {{ request.user.account.end_date_of_license }}<br><br>
+                <form action="." method="POST" class="padding">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        {{ user_form.email }}
+                    </div>
+
+                    <div class="form-group"></div>
+                    {{ formset.management_form }}
+                    {{ formset.as_p }}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

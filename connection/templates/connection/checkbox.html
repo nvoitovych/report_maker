@@ -1,0 +1,41 @@
+<script type="text/javascript">
+$(document).ready(function(){
+	// Activate tooltip
+	$('[data-toggle="tooltip"]').tooltip();
+
+	// Select/Deselect checkboxes
+	var checkbox = $('table tbody input[type="checkbox"]');
+	$("#selectAll").click(function(){
+		if(this.checked){
+			checkbox.each(function(){
+				this.checked = true;
+			});
+		} else{
+			checkbox.each(function(){
+				this.checked = false;
+			});
+		}
+	});
+	checkbox.click(function(){
+		if(!this.checked){
+			$("#selectAll").prop("checked", false);
+		}
+	});
+
+});
+</script>
+
+
+<th>
+    <span class="custom-checkbox">
+        <input type="checkbox" id="selectAll">
+        <label for="selectAll"></label>
+    </span>
+</th>
+
+<td>
+    <span class="custom-checkbox">
+        <input type="checkbox" id="checkbox" name="options[]" value="1">
+        <label for="checkbox"></label>
+    </span>
+</td>

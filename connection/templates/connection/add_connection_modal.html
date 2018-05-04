@@ -1,0 +1,41 @@
+	<!--  Add Modal HTML -->
+	<div id="addConnectionModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form name="AddForm" method="POST" class="post-form">
+					<div class="modal-header">
+						<h4 class="modal-title">Add Connection</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">
+                        <div class="alert alert-error">
+                            {% for field in add_form %}
+                                <label>{{ field.label }}</label><br>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="col-sm-20">
+                                        <small class="text-danger">{{ field.errors|striptags }}</small><br>
+                                    </div>
+                                {% else %}
+                                    <br>
+                                {% endif %}
+                                <br>
+                            {% endfor %}
+                        </div>
+					</div>
+					<div class="modal-footer">
+                        <a href="{% url 'connection:ShowConnections' %}" id="cancel" name="cancel" class="btn btn-default">Cancel</a>
+                        <button id="submit" name="submit" class="btn btn-primary" value="1">Add</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+    <script>
+
+$(document).ready(function() {
+    {% if add_form.errors %}
+        $("#addConnectionModal").modal("show");
+    {% endif %}
+});
+</script>

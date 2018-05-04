@@ -1,0 +1,46 @@
+{% extends 'report_maker/base.html' %}
+
+{% load filters %}
+{% load staticfiles %}
+{% load static %}
+
+{% block title %}
+    Account Configurations
+{% endblock %}
+
+{%  block content %}
+
+	<div class="col s12 m8 offset-m2">
+        <div class="card">
+            <div class="card-content" id="div-inside-div">
+                <form name="EditForm" method="POST" class="post-form" action="{% url 'connection:EditConnection' connection_id=connection_id %}">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Edit Connection</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="modal-body">
+                            <div class="alert alert-error">
+                                {% for field in edit_form %}
+                                    <label>{{ field.label }}</label><br>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="col-sm-20">
+                                            <small class="text-danger">{{ field.errors|striptags }}</small><br>
+                                        </div>
+                                    {% else %}
+                                        <br>
+                                    {% endif %}
+                                    <br>
+                                {% endfor %}
+                            </div>
+					    </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="{% url 'connection:ShowConnections' %}" id="cancel" name="cancel" class="btn btn-default">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

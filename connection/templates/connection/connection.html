@@ -1,0 +1,116 @@
+{% extends 'report_maker/base.html' %}
+
+{% load filters %}
+{% load staticfiles %}
+{% load static %}
+
+{% block title %}
+    Connections
+{% endblock %}
+
+{%  block content %}
+    <div class="container">
+        <div class="table-wrapper">
+            <div class="table-title">
+                <div class="row">
+                    <div class="col-sm-6">
+						<h2>Manage <b>Connections</b></h2>
+					</div>
+					<div class="col-sm-6">
+						<a href="#addConnectionModal" class="btn btn-success" data-toggle="modal">
+                            <i class="material-icons">&#xE147;</i>
+                            <span>Add New Connection</span>
+                        </a>
+					</div>
+
+                </div>
+            </div>
+
+            {% if all_connections %}
+                <table class="table table-striped table-hover" id="connection_list_table">
+                    <thead>
+                        <tr>
+                            <th>Хеш тег</th>
+                            <th>Посилання на Twitter</th>
+			    			<th>Посилання на Facebook</th>
+                            <th>День тижня</th>
+                            <th>Формат звіту</th>
+                            <th>Номер в таблиці Twitter/Facebook</th>
+                            <th>Дія</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    {% for connection in all_connections %}
+                        <tr>
+                            <td>{{ connection.hash_tag }}</td>
+                            <td>{{ connection.twitter_link }}</td>
+                            <td>{{ connection.facebook_link }}</td>
+                            <td>{{ connection.get_day_of_report_display }}</td>
+                            <td>{{ connection.get_report_type_display }}</td>
+                            <td>{{ connection.number_in_table_twitter }}/{{ connection.number_in_table_facebook }}</td>
+                            <td>
+                                <a href="{% url 'connection:EditConnection' connection_id=connection.pk %}" class="connection"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
+                                <a href="#deleteConnection{{connection.id}}" class="connection" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
+                            </td>
+                        </tr>
+                        <!-- Delete Modal HTML -->
+                        <div id="deleteConnection{{connection.id}}" class="modal fade">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form>
+                                        <div class="modal-header">
+                                            <h4 class="modal-title">Delete Connection</h4>
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure you want to delete this Connection? {{ connection.hash_tag }}</p>
+                                            <p class="text-warning"><small>This action cannot be undone.</small></p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="{% url 'connection:ShowConnections' %}" id="cancel" name="cancel" class="btn btn-default">Cancel</a>
+                                            <a href="{% url 'connection:DeleteConnection' connection_id=connection.id %}" class="btn btn-danger" role="button">Delete</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </tbody>
+                </table>
+			    <div class="clearfix">
+                    <div class="hint-text">Showing <b>{{ all_connections.end_index|subtract_indexes:all_connections.start_index}}</b> out of <b>{{ all_connections.paginator.count }}</b> entries</div>
+                    <ul class="pagination">
+                        {% if all_connections.has_previous %}
+                            <li class="page-item">
+                                <a href="?page={{ all_connections.previous_page_number }}">Previous</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><a href="#">Previous</a></li>
+                        {% endif %}
+
+                        {% for page in all_connections.paginator.page_range %}
+                            {% if all_connections.number == page %}
+                                <li class="page-item active"><a href="#" class="page-link">{{ all_connections.number }}</a></li>
+                            {% else %}
+                                <li class="page-item"><a href="?page={{ page }}" class="page-link">{{ page }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if all_connections.has_next %}
+                            <li class="page-item">
+                                <a href="?page={{ all_connections.next_page_number }}">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><a href="#">Next</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% else %}
+                <div class="column" id="centerColumn" align="center">There is no Connections yet!</div>
+            {% endif %}
+
+            {% include 'connection/add_connection_modal.html' %}
+        </div>
+    </div>
+{% endblock %}
