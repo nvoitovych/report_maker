@@ -1,0 +1,31 @@
+	<!--  Add Modal HTML -->
+	<div id="addReportsModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form name="AddForm" method="POST" class="post-form">
+					<div class="modal-header">
+						<h4 class="modal-title" align="center">Create Reports With Custom Range</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					</div>
+					<div class="modal-body">
+
+                        <h6 align="center">From<br><i class="fa fa-calendar"></i> {{ daterange_form.start_date }}
+
+                            <br>To<br><i class="fa fa-calendar"></i> {{ daterange_form.end_date }}</h6>
+					</div>
+					<div class="modal-footer">
+                        <a href="{% url 'report:ShowReports' %}" id="cancel" name="cancel" class="btn btn-default">Cancel</a>
+                        <button id="submit" name="submit" class="btn btn-primary" value="1">Create</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+    <script>
+
+$(document).ready(function() {
+    {% if add_form.errors %}
+        $("#addReportsModal").modal("show");
+    {% endif %}
+});
+</script>

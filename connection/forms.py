@@ -33,9 +33,9 @@ class ConnectionForm(forms.ModelForm):
             )
         ):
             self._errors['facebook_link'] = \
-                self.error_class([_("You must filled at least one field: Facebook or Twitter.")])
+                self.error_class([_("You must fill at least one field: Facebook or Twitter.")])
             self._errors['twitter_link'] = \
-                self.error_class([_("You must filled at least one field: Facebook or Twitter.")])
+                self.error_class([_("You must fill at least one field: Facebook or Twitter.")])
         return data
 
     def clean_hash_tag(self):

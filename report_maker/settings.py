@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'account',
     'connection',
     'report_maker',
-    'bootstrap_daterangepicker',
 ]
 
 MIDDLEWARE = [

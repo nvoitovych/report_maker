@@ -5,18 +5,6 @@
 {% load staticfiles %}
 {% load static %}
 
-<script>
-  $(function() {
-    $( ".datepicker" ).datepicker({
-      changeMonth: true,
-      changeYear: true,
-      yearRange: "1900:2012",
-      // You can put more options here.
-
-    });
-  });
-</script>
-
 {% block title %}
     Reports
 {% endblock %}
@@ -29,12 +17,18 @@
                     <div class="col-sm-6">
 						<h2>Manage <b>Reports</b></h2>
 					</div>
+                    <div class="col-sm-6">
+						<a href="#addReportsModal" class="btn btn-success" data-toggle="modal">
+                            <i class="material-icons">&#xE147;</i>
+                            <span>Custom Date Range</span>
+                        </a>
+					</div>
                 </div>
             </div>
             <div class="column" id="centerColumn" align="center"><h4>Today: {{ now.date|date:'l' }}, {{ now.date }}</h4></div>
             <div class="collumn" id="centerColumn" align="center">
 
-                <a href="#" class="btn btn-outline-primary" role="button">{{ now.date|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:6|date:'d.m'}} - {{ now.date|date:'d.m'}}</a>
+                <a href="{% url 'report:CreateReports' %}" class="btn btn-outline-primary" role="button">{{ now.date|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:6|date:'d.m'}} - {{ now.date|date:'d.m'}}</a>
                 <a href="#" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:1|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:7|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:1|date:'d.m'}}</a>
                 <a href="#" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:2|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:8|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:2|date:'d.m'}}</a>
                 <a href="#" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:3|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:9|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:3|date:'d.m'}}</a>
@@ -43,88 +37,142 @@
                 <a href="#" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:6|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:12|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:6|date:'d.m'}}</a>
 
 
-                <br><br>From {{ daterange_form. }} To {{ daterange_form.end_date }}
+                <!--
+                <form name="AddForm" method="POST" class="post-form">
+                    <br>From<br><i class="fa fa-calendar"></i> {{ daterange_form.start_date }}<br>To<br><i class="fa fa-calendar"></i> {{ daterange_form.end_date }}
+                    <br><br>
+                        <a href="{% url 'report:ShowReports' %}" id="cancel" name="cancel" class="btn btn-default">Cancel</a>
+                        <a href="{% url 'report:ShowReports' %}" id="submit" name="submit" class="btn btn-primary">Create</a>
 
-            </div><br>
+                </form>
+                <br>
+                -->
 
+                {% if all_reports %}
+                    <table class="table table-striped table-hover" id="connection_list_table">
+                        <thead>
+                            <tr>
+                                <th>Назва звіту</th>
+                                <th>Ім'я користувача</th>
+                                <th>Звіт</th>
+                                <th>Дія</th>
+                            </tr>
+                        </thead>
+                        <tbody>
 
-
-
-
-            {% if all_reports %}
-                <table class="table table-striped table-hover" id="connection_list_table">
-                    <thead>
-                        <tr>
-                            <th>Назва звіту</th>
-                            <th>Ім'я користувача</th>
-                            <th>Дія</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                    {% for report in all_reports %}
-                        <tr>
-                            <td>{{ report.name }}</td>
-                            <td>{{ report.user.username }}</td>
-                            <td>
-                                <a href="#deleteReport{{report.id}}" class="report" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
-                            </td>
-                        </tr>
-                        <!-- Delete Modal HTML -->
-                        <div id="deleteReport{{report.id}}" class="modal fade">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <form>
-                                        <div class="modal-header">
-                                            <h4 class="modal-title">Delete Report</h4>
-                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p>Are you sure you want to delete this Report? {{ report.hash_tag }}</p>
-                                            <p class="text-warning"><small>This action cannot be undone.</small></p>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
-                                            <a href="{% url 'report:DeleteReport' report_id=report.id %}" class="btn btn-danger" role="button">Delete</a>
-                                        </div>
-                                    </form>
+                        {% for report in all_reports %}
+                            <tr>
+                                <td>{{ report.name }}</td>
+                                <td>{{ report.user.username }}</td>
+                                <td>{{ report.file }}</td>
+                                <td>
+                                    <a href="#deleteReport{{report.id}}" class="report" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
+                                </td>
+                            </tr>
+                            <!-- Delete Modal HTML -->
+                            <div id="deleteReport{{report.id}}" class="modal fade">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form>
+                                            <div class="modal-header">
+                                                <h4 class="modal-title">Delete Report</h4>
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to delete this Report? {{ report.hash_tag }}</p>
+                                                <p class="text-warning"><small>This action cannot be undone.</small></p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                                                <a href="{% url 'report:DeleteReport' report_id=report.id %}" class="btn btn-danger" role="button">Delete</a>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    {% endfor %}
-                    </tbody>
-                </table>
-			    <div class="clearfix">
-                    <div class="hint-text">Showing <b>{{ all_reports.end_index|subtract_indexes:all_reports.start_index}}</b> out of <b>{{ all_reports.paginator.count }}</b> entries</div>
-                    <ul class="pagination">
-                        {% if all_reports.has_previous %}
-                            <li class="page-item">
-                                <a href="?page={{ all_reports.previous_page_number }}">Previous</a>
-                            </li>
-                        {% else %}
-                            <li class="page-item disabled"><a href="#">Previous</a></li>
-                        {% endif %}
-
-                        {% for page in all_reports.paginator.page_range %}
-                            {% if all_reports.number == page %}
-                                <li class="page-item active"><a href="#" class="page-link">{{ all_reports.number }}</a></li>
-                            {% else %}
-                                <li class="page-item"><a href="?page={{ page }}" class="page-link">{{ page }}</a></li>
-                            {% endif %}
                         {% endfor %}
+                        </tbody>
+                    </table>
+			        <div class="clearfix">
+                        <div class="hint-text">Showing <b>{{ all_reports.end_index|subtract_indexes:all_reports.start_index}}</b> out of <b>{{ all_reports.paginator.count }}</b> entries</div>
+                        <ul class="pagination">
+                            {% if all_reports.has_previous %}
+                                <li class="page-item">
+                                    <a href="?page={{ all_reports.previous_page_number }}">Previous</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><a href="#">Previous</a></li>
+                            {% endif %}
 
-                        {% if all_reports.has_next %}
-                            <li class="page-item">
-                                <a href="?page={{ all_reports.next_page_number }}">Next</a>
-                            </li>
-                        {% else %}
-                            <li class="page-item disabled"><a href="#">Next</a></li>
-                        {% endif %}
-                    </ul>
-                </div>
-            {% else %}
-                <div class="column" id="centerColumn" align="center">There is no Reports yet!</div>
-            {% endif %}
+                            {% for page in all_reports.paginator.page_range %}
+                                {% if all_reports.number == page %}
+                                    <li class="page-item active"><a href="#" class="page-link">{{ all_reports.number }}</a></li>
+                                {% else %}
+                                    <li class="page-item"><a href="?page={{ page }}" class="page-link">{{ page }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if all_reports.has_next %}
+                                <li class="page-item">
+                                    <a href="?page={{ all_reports.next_page_number }}">Next</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><a href="#">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                {% else %}
+                    <div class="column" id="centerColumn" align="center">There is no Reports yet!</div>
+                {% endif %}
+            </div>
         </div>
     </div>
+
+
+{% include 'report/add_reports_with_custom_range_modal.html' %}
+
+
+<!--formden.js communicates with FormDen server to validate fields and submit via AJAX -->
+<script type="text/javascript" src="https://formden.com/static/cdn/formden.js"></script>
+
+<!-- Special version of Bootstrap that is isolated to content wrapped in .bootstrap-iso -->
+<link rel="stylesheet" href="https://formden.com/static/cdn/bootstrap-iso.css" />
+
+<!--Font Awesome (added because you use icons in your prepend/append)-->
+<link rel="stylesheet" href="https://formden.com/static/cdn/font-awesome/4.4.0/css/font-awesome.min.css" />
+
+<!-- Inline CSS based on choices in "Settings" tab -->
+<style>.bootstrap-iso .formden_header h2, .bootstrap-iso .formden_header p, .bootstrap-iso form{font-family: Arial, Helvetica, sans-serif; color: black}.bootstrap-iso form button, .bootstrap-iso form button:hover{color: white !important;} .asteriskField{color: red;}</style>
+
+
+<!-- Extra JavaScript/CSS added manually in "Settings" tab -->
+<!-- Include jQuery -->
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"/>
+
+<script>
+	$(document).ready(function(){
+		var start_date_input=$('input[name="start_date"]'); //our date input has the name "date"
+		var end_date_input=$('input[name="end_date"]'); //our date input has the name "date"
+		var container=$('.bootstrap-iso form').length>0 ? $('.bootstrap-iso form').parent() : "body";
+		start_date_input.datepicker({
+			format: 'dd/mm/yyyy',
+			container: container,
+			todayHighlight: true,
+			autoclose: true,
+		});
+		end_date_input.datepicker({
+			format: 'dd/mm/yyyy',
+			container: container,
+			todayHighlight: true,
+			autoclose: true,
+		})
+	});
+
+</script>
+
+
 {% endblock %}

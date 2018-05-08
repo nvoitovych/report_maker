@@ -1,17 +1,29 @@
+from datetime import datetime
+
 from django import forms
 from django.utils.translation import gettext as _
 from django.contrib.admin.widgets import AdminDateWidget
-from django.forms.fields import DateField
-from bootstrap_daterangepicker import widgets, fields
+from django.forms import fields
 
 
 class DateRangeForm(forms.Form):
-    # Date Range Fields
-    date_range_normal = fields.DateRangeField()
-    date_range_with_format = fields.DateRangeField(
-        input_formats=['%d/%m/%Y'],
-        widget=widgets.DateRangeWidget(
-            format='%d/%m/%Y'
-        )
-    )
-    date_range_clearable = fields.DateRangeField(clearable=True)
+    start_date = fields.DateField(widget=forms.DateInput(attrs={
+        'placeholder': 'DD/MM/YYYY',
+        'class': 'date-input',
+    }))
+    end_date = fields.DateField(widget=forms.DateInput(attrs={
+        'placeholder': 'DD/MM/YYYY',
+        'class': 'date-input',
+    }))
+
+
+    """
+        start_date = DateField(widget=forms.SelectDateWidget(attrs={
+        'placeholder': 'DD/MM/YYYY',
+        'class': 'date-input',
+    }))
+    end_date = DateField(widget=forms.SelectDateWidget(attrs={
+        'placeholder': 'DD/MM/YYYY',
+        'class': 'date-input',
+    }))
+    """

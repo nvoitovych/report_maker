@@ -9,5 +9,5 @@ urlpatterns = [
     # ex: /reports/
     path('', views.show_reports, name='ShowReports'),
     path('delete/<int:report_id>/', views.delete_report, name='DeleteReport'),
-    path('delete/<str:day_of_report>/', views.create_reports, name='CreateReport'),
+    path('create/', views.create_reports, name='CreateReports'),
 ]
