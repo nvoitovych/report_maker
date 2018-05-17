@@ -9,12 +9,14 @@
 					</div>
 					<div class="modal-body">
 
-                        <h6 align="center">From<br><i class="fa fa-calendar"></i> {{ daterange_form.start_date }}
-
-                            <br>To<br><i class="fa fa-calendar"></i> {{ daterange_form.end_date }}</h6>
+                        <h6 align="center">
+                            From<br><i class="fa fa-calendar"></i> {{ custom_report_form.start_date }}
+                            <br>To<br><i class="fa fa-calendar"></i> {{ custom_report_form.end_date }}
+                            <br><br>Day of week: {{ custom_report_form.day_of_report }}
+                        </h6>
 					</div>
 					<div class="modal-footer">
-                        <a href="{% url 'report:ShowReports' %}" id="cancel" name="cancel" class="btn btn-default">Cancel</a>
+                        <a href="{% url 'report:ShowReports'%}" id="cancel" name="cancel" class="btn btn-default">Cancel</a>
                         <button id="submit" name="submit" class="btn btn-primary" value="1">Create</button>
 					</div>
 				</form>

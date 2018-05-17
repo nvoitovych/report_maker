@@ -28,7 +28,9 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-LOGIN_REDIRECT_URL = 'connection:ShowConnections'
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
+LOGIN_REDIRECT_URL = 'main_page'
 
 # Application definition
 
@@ -43,6 +45,9 @@ INSTALLED_APPS = [
     'account',
     'connection',
     'report_maker',
+    'social_django',
+
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +58,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'report_maker.urls'
@@ -68,6 +75,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                'social_django.context_processors.backends',  # <--
+                'social_django.context_processors.login_redirect', # <--
             ],
             'libraries':{
                 'filters': 'connection.templatetags.filters',
@@ -77,6 +87,8 @@ TEMPLATES = [
         },
     },
 ]
+
+
 
 WSGI_APPLICATION = 'report_maker.wsgi.application'
 
@@ -92,7 +104,13 @@ DATABASES = {
 }
 
 
-AUTHENTICATION_BACKENDS = ('account.backends.UserAuth', )
+AUTHENTICATION_BACKENDS = [
+    'social_core.backends.twitter.TwitterOAuth',
+    'social_core.backends.facebook.FacebookOAuth2',
+
+
+    'account.backends.UserAuth',
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
@@ -134,3 +152,16 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+SOCIAL_AUTH_FACEBOOK_KEY = '183334605652923'  # App ID
+SOCIAL_AUTH_FACEBOOK_SECRET = 'fcae16b12d0210588c1c063d6526fbed'  # App Secret
+
+SOCIAL_AUTH_TWITTER_KEY = '85tlTgCiA8zrQDTxXDwPuNdEy'
+SOCIAL_AUTH_TWITTER_SECRET = '1axQ15ohlmF0USKOTm5bZLApZP2XnLujr7np0SJ0aqmQPvYUPj'
+
+SOCIAL_AUTH_LOGIN_ERROR_URL = 'main_page'
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'main_page'
+SOCIAL_AUTH_RAISE_EXCEPTIONS = False
+ECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+

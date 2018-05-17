@@ -18,6 +18,15 @@
             </div>
             <br>
             <div class="modal-body">
+                {% if login_to_twitter_error != 'None'  %}
+                    <h6 style="color: darkred">{{ login_to_twitter_error }}</h6>
+                {% endif %}
+
+                {% if login_to_facebook_error != 'None'  %}
+                    <h6 style="color: darkred">{{ login_to_facebook_error }}</h6>
+                {% endif %}
+
+                <br>
                 Ім'я користувача: {{ request.user.username }} <br><br>
                 Термін дії ліцензії: {{ request.user.account.start_date_of_license }} - {{ request.user.account.end_date_of_license }}<br><br>
                 <form action="." method="POST" class="padding">
@@ -31,6 +40,38 @@
                     {{ formset.management_form }}
                     {{ formset.as_p }}
                 </form>
+
+
+                <div id='twitter-div'>
+                    <h3>Twitter</h3>
+
+                    {% if twitter_login %}
+                        <p>Connected as <a href="https://twitter.com/{{ twitter_login.extra_data.access_token.screen_name }}/" target="_blank">@{{ twitter_login.extra_data.access_token.screen_name }}</a></p>
+                        <form method="post" action="{% url 'social:disconnect' 'twitter' %}">
+                            {% csrf_token %}
+                            <button type="submit">Disconnect from Twitter</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'social:begin' 'twitter' %}">Connect to Twitter</a>
+                    {% endif %}
+                </div>
+                <br>
+
+                <div id='facebook-div'>
+                    <h3>Facebook</h3>
+
+                    {% if facebook_login %}
+                    <p>Connected as <a href="https://facebook.com/{{ facebook_login.extra_data.id }}/" target="_blank">{{ facebook_login.extra_data.id }}</a></p>
+                    <form method="post" action="{% url 'social:disconnect' 'facebook' %}">
+                        {% csrf_token %}
+                        <button type="submit">Disconnect from Facebook</button>
+                    </form>
+                    {% else %}
+                        <a href="{% url 'social:begin' 'facebook' %}">Connect to Facebook</a>
+                    {% endif %}
+                </div>
+                <br>
+
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-primary">Submit</button>

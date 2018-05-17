@@ -1,12 +1,19 @@
-from datetime import datetime
-
 from django import forms
-from django.utils.translation import gettext as _
-from django.contrib.admin.widgets import AdminDateWidget
 from django.forms import fields
 
 
-class DateRangeForm(forms.Form):
+DAY_OF_REPORT__CHOICES = (
+    ("mon", "Понеділок"),
+    ("tues", "Вівторок"),
+    ("wed", "Середа"),
+    ("thurs", "Четвер"),
+    ("fri", "П'ятниця"),
+    ("sat", "Субота"),
+    ("sun", "Неділя"),
+)
+
+
+class CustomReportForm(forms.Form):
     start_date = fields.DateField(widget=forms.DateInput(attrs={
         'placeholder': 'DD/MM/YYYY',
         'class': 'date-input',
@@ -15,7 +22,9 @@ class DateRangeForm(forms.Form):
         'placeholder': 'DD/MM/YYYY',
         'class': 'date-input',
     }))
-
+    day_of_report = fields.ChoiceField(
+        choices=DAY_OF_REPORT__CHOICES,
+    )
 
     """
         start_date = DateField(widget=forms.SelectDateWidget(attrs={

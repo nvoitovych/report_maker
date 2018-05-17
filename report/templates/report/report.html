@@ -28,25 +28,13 @@
             <div class="column" id="centerColumn" align="center"><h4>Today: {{ now.date|date:'l' }}, {{ now.date }}</h4></div>
             <div class="collumn" id="centerColumn" align="center">
 
-                <a href="{% url 'report:CreateReports' %}" class="btn btn-outline-primary" role="button">{{ now.date|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:6|date:'d.m'}} - {{ now.date|date:'d.m'}}</a>
-                <a href="#" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:1|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:7|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:1|date:'d.m'}}</a>
-                <a href="#" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:2|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:8|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:2|date:'d.m'}}</a>
-                <a href="#" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:3|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:9|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:3|date:'d.m'}}</a>
-                <a href="#" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:4|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:10|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:4|date:'d.m'}}</a>
-                <a href="#" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:5|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:11|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:5|date:'d.m'}}</a>
-                <a href="#" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:6|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:12|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:6|date:'d.m'}}</a>
-
-
-                <!--
-                <form name="AddForm" method="POST" class="post-form">
-                    <br>From<br><i class="fa fa-calendar"></i> {{ daterange_form.start_date }}<br>To<br><i class="fa fa-calendar"></i> {{ daterange_form.end_date }}
-                    <br><br>
-                        <a href="{% url 'report:ShowReports' %}" id="cancel" name="cancel" class="btn btn-default">Cancel</a>
-                        <a href="{% url 'report:ShowReports' %}" id="submit" name="submit" class="btn btn-primary">Create</a>
-
-                </form>
-                <br>
-                -->
+                <a href="{% url 'report:CreateReports' day_of_week=now.date|date:'l' start_date=now.date|date_n_days_ago_filter:6|date:'d.m.Y' end_date=now.date|date:'d.m.Y'%}" class="btn btn-outline-primary" role="button">{{ now.date|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:6|date:'d.m'}} - {{ now.date|date:'d.m'}}</a>
+                <a href="{% url 'report:CreateReports' day_of_week=now.date|date_n_days_ago_filter:1|date:'l' start_date=now.date|date_n_days_ago_filter:7|date:'d.m.Y' end_date=now.date|date_n_days_ago_filter:1|date:'d.m.Y'%}" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:1|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:7|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:1|date:'d.m'}}</a>
+                <a href="{% url 'report:CreateReports' day_of_week=now.date|date_n_days_ago_filter:2|date:'l' start_date=now.date|date_n_days_ago_filter:8|date:'d.m.Y' end_date=now.date|date_n_days_ago_filter:2|date:'d.m.Y'%}" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:2|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:8|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:2|date:'d.m'}}</a>
+                <a href="{% url 'report:CreateReports' day_of_week=now.date|date_n_days_ago_filter:3|date:'l' start_date=now.date|date_n_days_ago_filter:9|date:'d.m.Y' end_date=now.date|date_n_days_ago_filter:3|date:'d.m.Y'%}" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:3|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:9|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:3|date:'d.m'}}</a>
+                <a href="{% url 'report:CreateReports' day_of_week=now.date|date_n_days_ago_filter:4|date:'l' start_date=now.date|date_n_days_ago_filter:10|date:'d.m.Y' end_date=now.date|date_n_days_ago_filter:4|date:'d.m.Y'%}" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:4|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:10|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:4|date:'d.m'}}</a>
+                <a href="{% url 'report:CreateReports' day_of_week=now.date|date_n_days_ago_filter:5|date:'l' start_date=now.date|date_n_days_ago_filter:11|date:'d.m.Y' end_date=now.date|date_n_days_ago_filter:5|date:'d.m.Y'%}" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:5|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:11|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:5|date:'d.m'}}</a>
+                <a href="{% url 'report:CreateReports' day_of_week=now.date|date_n_days_ago_filter:6|date:'l' start_date=now.date|date_n_days_ago_filter:12|date:'d.m.Y' end_date=now.date|date_n_days_ago_filter:6|date:'d.m.Y'%}" class="btn btn-outline-primary" role="button">{{ now.date|date_n_days_ago_filter:6|date:'l' }}<br>{{ now.date|date_n_days_ago_filter:12|date:'d.m'}} - {{ now.date|date_n_days_ago_filter:6|date:'d.m'}}</a>
 
                 {% if all_reports %}
                     <table class="table table-striped table-hover" id="connection_list_table">
@@ -64,7 +52,11 @@
                             <tr>
                                 <td>{{ report.name }}</td>
                                 <td>{{ report.user.username }}</td>
-                                <td>{{ report.file }}</td>
+                                <td>
+                                    <a href="{% url 'report:DownloadReport' filename=report.name %}">
+                                        Download Report
+                                    </a>
+                                </td>
                                 <td>
                                     <a href="#deleteReport{{report.id}}" class="report" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
                                 </td>
@@ -121,12 +113,14 @@
                             {% endif %}
                         </ul>
                     </div>
+
                 {% else %}
-                    <div class="column" id="centerColumn" align="center">There is no Reports yet!</div>
+                    <div class="column" id="centerColumn" align="center"><br>There is no Reports yet!<br><br></div>
                 {% endif %}
             </div>
         </div>
     </div>
+
 
 
 {% include 'report/add_reports_with_custom_range_modal.html' %}

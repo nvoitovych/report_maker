@@ -31,6 +31,8 @@ urlpatterns = [
     path('report/', include((report_urls, 'report'), namespace='report')),
     path('connection/', include((connection_urls, 'connection'), namespace='connection')),
     path('', connection_views.main_page, name='main_page'),
+
+    path('oauth/', include('social_django.urls', namespace='social')),  # <--
 ]
 
 if settings.DEBUG:

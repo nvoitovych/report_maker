@@ -235,6 +235,9 @@
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                             <a class="dropdown-item" href="#">Hi, {{ request.user.username }}!</a>
+                            {% if request.user.is_superuser %}
+                                <a class="dropdown-item" href="{% url 'admin:index' %}">Admin Panel</a>
+                            {% endif %}
                             <a class="dropdown-item" href="{% url 'account:AccountUpdate' user_id=request.user.id %}">Configurations</a>
                             <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                         </div>
