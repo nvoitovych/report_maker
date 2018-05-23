@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.forms.models import inlineformset_factory
 from django.core.exceptions import PermissionDenied
+from django import forms
 
 from social_django.models import UserSocialAuth
 
@@ -15,27 +15,32 @@ def account_update(request, user_id):
     # querying the User object with pk from url
     user = User.objects.get(pk=user_id)
 
-    # prepopulate UserForm with retrieved user values from above.
+    # populate UserForm with retrieved user values from above.
     user_form = UserForm(instance=user)
 
     # The sorcery begins from here, see explanation below
-    account_inline_formset = inlineformset_factory(User, Account,
-                                                   fields=(
-                                                     'facebook_link',
-                                                     'twitter_link',
-                                                     'facebook_link',
-                                                     'twitter_link',
-                                                     'eth_wallet',
-                                                     'show_eth_wallet_in_report',
-                                                     'link_to_bitcointalk_profile',
-                                                     'show_link_to_bitcointalk_profile_in_report',
-                                                     'nickname_on_bitcointalk',
-                                                     'show_nickname_on_bitcointalk_in_report',
-                                                     'link_to_telegram_account',
-                                                     'show_link_to_telegram_accoun_in_report',
-                                                   ),
-                                                   can_delete=False,
-                                                   )
+    account_inline_formset = forms.models.inlineformset_factory(User, Account,
+                                                                fields=(
+                                                                    'facebook_link',
+                                                                    'total_count_of_followers_on_facebook',
+                                                                    'eth_wallet',
+                                                                    'show_eth_wallet_in_report',
+                                                                    'link_to_bitcointalk_profile',
+                                                                    'show_link_to_bitcointalk_profile_in_report',
+                                                                    'nickname_on_bitcointalk',
+                                                                    'show_nickname_on_bitcointalk_in_report',
+                                                                    'link_to_telegram_account',
+                                                                    'show_link_to_telegram_accoun_in_report',
+                                                                ),
+                                                                widgets={
+                                                                    'facebook_link': forms.TextInput(
+                                                                        attrs={
+                                                                            'placeholder':
+                                                                                "https://www.facebook.com/BillGates/"
+                                                                        }),
+                                                                },
+                                                                can_delete=False,
+                                                                )
     formset = account_inline_formset(instance=user)
 
     if request.user.is_authenticated and request.user.id == user.id:
@@ -82,23 +87,28 @@ def account_update_with_login_errors(request, user_id, login_to_twitter_error, l
     user_form = UserForm(instance=user)
 
     # The sorcery begins from here, see explanation below
-    account_inline_formset = inlineformset_factory(User, Account,
-                                                   fields=(
-                                                     'facebook_link',
-                                                     'twitter_link',
-                                                     'facebook_link',
-                                                     'twitter_link',
-                                                     'eth_wallet',
-                                                     'show_eth_wallet_in_report',
-                                                     'link_to_bitcointalk_profile',
-                                                     'show_link_to_bitcointalk_profile_in_report',
-                                                     'nickname_on_bitcointalk',
-                                                     'show_nickname_on_bitcointalk_in_report',
-                                                     'link_to_telegram_account',
-                                                     'show_link_to_telegram_accoun_in_report',
-                                                   ),
-                                                   can_delete=False,
-                                                   )
+    account_inline_formset = forms.models.inlineformset_factory(User, Account,
+                                                                fields=(
+                                                                    'facebook_link',
+                                                                    'total_count_of_followers_on_facebook',
+                                                                    'eth_wallet',
+                                                                    'show_eth_wallet_in_report',
+                                                                    'link_to_bitcointalk_profile',
+                                                                    'show_link_to_bitcointalk_profile_in_report',
+                                                                    'nickname_on_bitcointalk',
+                                                                    'show_nickname_on_bitcointalk_in_report',
+                                                                    'link_to_telegram_account',
+                                                                    'show_link_to_telegram_accoun_in_report',
+                                                                ),
+                                                                widgets={
+                                                                    'facebook_link': forms.TextInput(
+                                                                        attrs={
+                                                                            'placeholder':
+                                                                                "https://www.facebook.com/BillGates/"
+                                                                        }),
+                                                                },
+                                                                can_delete=False,
+                                                                )
     formset = account_inline_formset(instance=user)
 
     if request.user.is_authenticated and request.user.id == user.id:

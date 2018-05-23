@@ -1,7 +1,11 @@
 import datetime
 import os
+import re
+from dateutil.parser import parse
 
+import requests
 import tweepy
+import facebook
 
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -160,6 +164,7 @@ def create_reports(request, start_date, end_date, day_of_week):
             if user.account.show_link_to_telegram_accoun_in_report:
                 f.write("Telegram Profile Link: {}\n".format(user.account.link_to_telegram_account))
 
+            # making report for user twitter page
             if connection.twitter_link:
                 # Connect to Twitter API using access token and secret of our app(registered in Twitter for developers)
                 # and access token and secret of signed in User
@@ -310,6 +315,210 @@ def create_reports(request, start_date, end_date, day_of_week):
                 # write all Retweets(We need only retweets!)
                 # to 'Retweets and Likes'(Yes! Name of section is another:) section of report
                 for line in retweets_and_likes_list:
+                    f.write(line)
+
+            if connection.facebook_link:
+                # Connect to Facebook API using signed in User access token
+                facebook_login = user.social_auth.get(provider='facebook')
+                access_token = facebook_login.extra_data['access_token']
+
+                graph = facebook.GraphAPI(access_token, version="2.7")
+                # specify all arguments(in our case only fields which we require)
+                # which API object should use for connection to Facebook API
+                args = {'fields': 'message,parent_id,created_time'}
+                posts = graph.get_connections(id=facebook_login.uid, connection_name='posts', **args)
+
+                if connection.twitter_link:
+                    f.write("\n\n-----------------\n")
+                f.write("Facebook Campaign\n")
+                f.write("Facebook: {}\n".format(user.account.facebook_link))
+                f.write("Followers: {}\n".format(user.account.total_count_of_followers_on_facebook))
+                if connection.number_in_table_facebook:
+                    f.write("Number on the spreadsheet: {}\n".format(connection.number_in_table_facebook))
+                f.write("\nPosts\n")
+
+                posts_list = []
+                reposts_and_likes_list = []
+
+                if connection.report_type == "simple":
+                    str_line_to_write = "{}\n"
+                elif connection.report_type == "numbered":
+                    str_line_to_write = "{}. {}\n"
+                else:
+                    str_line_to_write = "{} - {:%d.%m}: {}\n"
+
+                # Wrap this block in a while loop so we can keep paginating requests until
+                # finished.
+                if connection.report_type == "simple":
+                    while True:
+                        try:
+                            # Perform some action on each post in the collection we receive from
+                            # Facebook.
+                            for post in posts['data']:
+                                # convert 'created_time' to datetime object and
+                                # skip part with timezones in datetime obj to compare with datetime objects without tz
+                                creation_time_datetime_object_with_tz = parse(post['created_time'])
+                                creation_time_datetime_str = \
+                                    creation_time_datetime_object_with_tz.strftime("%d.%m.%Y")
+                                creation_time_datetime_object = \
+                                    datetime.datetime.strptime(creation_time_datetime_str, '%d.%m.%Y')
+
+                                if (creation_time_datetime_object >= start_date_datetime_object) \
+                                        and (creation_time_datetime_object < end_date_datetime_object):
+
+                                    list_of_all_hash_tags = []
+                                    try:
+                                        if post['parent_id'].split('_')[0] == connection.facebook_link:
+                                            reposts_and_likes_list.append(
+                                                str_line_to_write.format("https://www.facebook.com/" + post['id']))
+                                    except KeyError:
+                                        pass
+                                    try:
+                                        if post['message']:
+                                            list_of_all_hash_tags = re.findall(r"#(\w+)", post['message'])
+                                    except KeyError:
+                                        pass
+                                    if connection.hash_tag in list_of_all_hash_tags:
+                                        posts_list.append(
+                                            str_line_to_write.format("https://www.facebook.com/" + post['id']))
+                            # Attempt to make a request to the next page of data, if it exists.
+                            posts = requests.get(posts['paging']['next']).json()
+                        except KeyError:
+                            # When there are no more pages (['paging']['next']), break from the
+                            # loop and end the script.
+                            break
+                elif connection.report_type == "numbered":
+                        number_of_posts_in_report = 0
+                        number_of_reposts_and_shares_in_report = 0
+                        while True:
+                            try:
+                                # Perform some action on each post in the collection we receive from
+                                # Facebook.
+                                for post in posts['data']:
+                                    # convert 'created_time' to datetime object and
+                                    # skip part with timezones in datetime object
+                                    # to compare with datetime objects without tz
+                                    creation_time_datetime_object_with_tz = parse(post['created_time'])
+                                    creation_time_datetime_str = \
+                                        creation_time_datetime_object_with_tz.strftime("%d.%m.%Y")
+                                    creation_time_datetime_object = \
+                                        datetime.datetime.strptime(creation_time_datetime_str, '%d.%m.%Y')
+
+                                    if (creation_time_datetime_object >= start_date_datetime_object) \
+                                            and (creation_time_datetime_object < end_date_datetime_object):
+
+                                        list_of_all_hash_tags = []
+                                        try:
+                                            if post['parent_id'].split('_')[0] == connection.facebook_link:
+                                                number_of_reposts_and_shares_in_report += 1
+                                                reposts_and_likes_list.append(str_line_to_write.format(
+                                                    number_of_reposts_and_shares_in_report,
+                                                    "https://www.facebook.com/" + post['id']))
+                                        except KeyError:
+                                            pass
+                                        try:
+                                            if post['message']:
+                                                list_of_all_hash_tags = re.findall(r"#(\w+)", post['message'])
+                                        except KeyError:
+                                            pass
+                                        if connection.hash_tag in list_of_all_hash_tags:
+                                            number_of_posts_in_report += 1
+                                            posts_list.append(str_line_to_write.format(
+                                                number_of_posts_in_report, "https://www.facebook.com/" + post['id']))
+                                # Attempt to make a request to the next page of data, if it exists.
+                                posts = requests.get(posts['paging']['next']).json()
+                            except KeyError:
+                                # When there are no more pages (['paging']['next']), break from the
+                                # loop and end the script.
+                                break
+                else:
+                        number_of_posts_in_report = 0
+                        number_of_reposts_and_shares_in_report = 0
+                        while True:
+                            try:
+                                # Perform some action on each post in the collection we receive from
+                                # Facebook.
+                                for post in posts['data']:
+                                    # convert 'created_time' to datetime object and
+                                    # skip part with timezones in datetime obj
+                                    # to compare with datetime objects without tz
+                                    creation_time_datetime_object_with_tz = parse(post['created_time'])
+                                    creation_time_datetime_str = \
+                                        creation_time_datetime_object_with_tz.strftime("%d.%m.%Y")
+                                    creation_time_datetime_object = \
+                                        datetime.datetime.strptime(creation_time_datetime_str, '%d.%m.%Y')
+
+                                    if (creation_time_datetime_object >= start_date_datetime_object) \
+                                            and (creation_time_datetime_object < end_date_datetime_object):
+
+                                        list_of_all_hash_tags = []
+                                        try:
+                                            if post['parent_id'].split('_')[0] == connection.facebook_link:
+                                                number_of_reposts_and_shares_in_report += 1
+                                                reposts_and_likes_list.append(str_line_to_write.format(
+                                                    number_of_reposts_and_shares_in_report,
+                                                    creation_time_datetime_object,
+                                                    "https://www.facebook.com/" + post['id']))
+                                        except KeyError:
+                                            pass
+                                        try:
+                                            if post['message']:
+                                                list_of_all_hash_tags = re.findall(r"#(\w+)", post['message'])
+                                        except KeyError:
+                                            pass
+                                        if connection.hash_tag in list_of_all_hash_tags:
+                                            number_of_posts_in_report += 1
+                                            posts_list.append(str_line_to_write.format(
+                                                number_of_posts_in_report, creation_time_datetime_object,
+                                                "https://www.facebook.com/" + post['id']))
+                                # Attempt to make a request to the next page of data, if it exists.
+                                posts = requests.get(posts['paging']['next']).json()
+                            except KeyError:
+                                # When there are no more pages (['paging']['next']), break from the
+                                # loop and end the script.
+                                break
+                while True:
+                    try:
+                        # Perform some action on each post in the collection we receive from
+                        # Facebook.
+                        for post in posts['data']:
+                            # convert 'created_time' to datetime object and
+                            # skip part with timezones in datetime object to compare with datetime objects without tz
+                            creation_time_datetime_object_with_tz = parse(post['created_time'])
+                            creation_time_datetime_str = \
+                                creation_time_datetime_object_with_tz.strftime("%d.%m.%Y")
+                            creation_time_datetime_object = \
+                                datetime.datetime.strptime(creation_time_datetime_str, '%d.%m.%Y')
+
+                            if (creation_time_datetime_object >= start_date_datetime_object) \
+                                    and (creation_time_datetime_object < end_date_datetime_object):
+
+                                list_of_all_hash_tags = []
+                                try:
+                                    if post['parent_id'].split('_')[0] == connection.facebook_link:
+                                        reposts_and_likes_list.append("https://www.facebook.com/" + post['id'])
+                                except KeyError:
+                                    pass
+                                try:
+                                    if post['message']:
+                                        list_of_all_hash_tags = re.findall(r"#(\w+)", post['message'])
+                                except KeyError:
+                                    pass
+                                if connection.hash_tag in list_of_all_hash_tags:
+                                    posts_list.append("https://www.facebook.com/" + post['id'])
+                        # Attempt to make a request to the next page of data, if it exists.
+                        posts = requests.get(posts['paging']['next']).json()
+                    except KeyError:
+                        # When there are no more pages (['paging']['next']), break from the
+                        # loop and end the script.
+                        break
+                # write all posts to 'Posts' section of report
+                for line in posts_list:
+                    f.write(line)
+                f.write("\n\nReposts and Shares\n")
+                # write all Reposts(We need only reposts!)
+                # to 'Reposts and Shares' section of report
+                for line in reposts_and_likes_list:
                     f.write(line)
             f.close()
 

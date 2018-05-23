@@ -21,6 +21,10 @@ class ConnectionForm(forms.ModelForm):
         exclude = (
             'user',
         )
+        widgets = {
+            'twitter_link': forms.TextInput(attrs={'placeholder': "https://twitter.com/SpaceX"}),
+            'facebook_link': forms.TextInput(attrs={'placeholder': "Enter only ID. Exp: 12345"}),
+        }
 
     def clean(self):
         data = super(ConnectionForm, self).clean()

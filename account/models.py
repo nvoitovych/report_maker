@@ -32,6 +32,12 @@ class Account(models.Model):
         null=True,
         verbose_name='Twitter',
     )
+    total_count_of_followers_on_facebook = models.PositiveIntegerField(
+        default=0,
+        blank=True,
+        null=True,
+        verbose_name='К-сть підписників на Facebook',
+    )
     eth_wallet = models.CharField(
         max_length=256,
         blank=True,

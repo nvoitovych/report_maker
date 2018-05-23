@@ -44,11 +44,35 @@
                     {% for connection in all_connections %}
                         <tr>
                             <td>{{ connection.hash_tag }}</td>
-                            <td>{{ connection.twitter_link }}</td>
-                            <td>{{ connection.facebook_link }}</td>
+                            <td>
+                                {% if connection.twitter_link %}
+                                   {{ connection.twitter_link }}
+                                {% else %}
+                                    ---
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if connection.facebook_link %}
+                                   {{ connection.facebook_link }}
+                                {% else %}
+                                    ---
+                                {% endif %}
+                            </td>
                             <td>{{ connection.get_day_of_report_display }}</td>
                             <td>{{ connection.get_report_type_display }}</td>
-                            <td>{{ connection.number_in_table_twitter }}/{{ connection.number_in_table_facebook }}</td>
+                            <td>
+                                {% if connection.number_in_table_twitter %}
+                                   {{ connection.number_in_table_twitter }}
+                                {% else %}
+                                    ---
+                                {% endif %}
+                                /
+                                {% if connection.number_in_table_facebook %}
+                                   {{ connection.number_in_table_facebook }}
+                                {% else %}
+                                    ---
+                                {% endif %}
+                            </td>
                             <td>
                                 <a href="{% url 'connection:EditConnection' connection_id=connection.pk %}" class="connection"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
                                 <a href="#deleteConnection{{connection.id}}" class="connection" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>

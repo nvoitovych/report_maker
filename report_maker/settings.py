@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'report_maker',
     'social_django',
 
-    'django_extensions',
+    'django_extensions',  # using for development process
+    'facebook',
 ]
 
 MIDDLEWARE = [
@@ -77,7 +78,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
 
                 'social_django.context_processors.backends',  # <--
-                'social_django.context_processors.login_redirect', # <--
+                'social_django.context_processors.login_redirect',  # <--
             ],
             'libraries':{
                 'filters': 'connection.templatetags.filters',
@@ -87,7 +88,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 
 WSGI_APPLICATION = 'report_maker.wsgi.application'
@@ -107,7 +107,6 @@ DATABASES = {
 AUTHENTICATION_BACKENDS = [
     'social_core.backends.twitter.TwitterOAuth',
     'social_core.backends.facebook.FacebookOAuth2',
-
 
     'account.backends.UserAuth',
 ]
@@ -159,9 +158,16 @@ SOCIAL_AUTH_FACEBOOK_SECRET = 'fcae16b12d0210588c1c063d6526fbed'  # App Secret
 SOCIAL_AUTH_TWITTER_KEY = '85tlTgCiA8zrQDTxXDwPuNdEy'
 SOCIAL_AUTH_TWITTER_SECRET = '1axQ15ohlmF0USKOTm5bZLApZP2XnLujr7np0SJ0aqmQPvYUPj'
 
+
 SOCIAL_AUTH_LOGIN_ERROR_URL = 'main_page'
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'main_page'
 SOCIAL_AUTH_RAISE_EXCEPTIONS = False
-ECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-
+# Force https redirect
+SECURE_SSL_REDIRECT = True
+# Honor the 'X-Forwarded-Proto' header for request.is_secure()
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Force HTTPS in the final URIs
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+# Use this server address as default using
+# './manage.py runserver_plus --cert /tmp/cert' command in terminal during development process
+RUNSERVERPLUS_SERVER_ADDRESS_PORT = '127.0.0.1:9000'

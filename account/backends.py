@@ -8,10 +8,12 @@ class UserAuth(object):
             try:
                 user = User.objects.get(username=username)
                 if user.check_password(password) and user.is_active:
-                    if user.is_superuser == True:
+                    if user.is_superuser:
                         return user
-                    if user.account.start_date_of_license is not None and user.account.start_date_of_license is not None:
-                        if now().date() >= user.account.start_date_of_license and now().date() <= user.account.end_date_of_license:
+                    if user.account.start_date_of_license is not None \
+                            and user.account.start_date_of_license is not None:
+                        if now().date() >= user.account.start_date_of_license \
+                                and now().date() <= user.account.end_date_of_license:
                             return user
             except User.DoesNotExist:
                 return None
