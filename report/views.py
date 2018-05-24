@@ -1,6 +1,8 @@
 import datetime
 import os
 import re
+import time
+
 from dateutil.parser import parse
 
 import requests
@@ -50,7 +52,6 @@ def show_reports(request):
         all_reports = paginator.page(1)
     except EmptyPage:
         all_reports = paginator.page(paginator.num_pages)
-    # connections_on_page = all_connections.end_index() - all_connections.start_index() + 1
 
     if request.method == 'POST':
         custom_report_form = CustomReportForm(request.POST)
@@ -74,7 +75,6 @@ def show_reports(request):
             'page_request_var': paginator,
             'now': now,
             'custom_report_form': custom_report_form,
-            # 'connections_on_page': connections_on_page,
         },
         RequestContext(request),
     )
@@ -164,22 +164,26 @@ def create_reports(request, start_date, end_date, day_of_week):
             if user.account.show_link_to_telegram_accoun_in_report:
                 f.write("Telegram Profile Link: {}\n".format(user.account.link_to_telegram_account))
 
-            # making report for user twitter page
+            # making report Twitter(parsing user twitter page)
             if connection.twitter_link:
                 # Connect to Twitter API using access token and secret of our app(registered in Twitter for developers)
                 # and access token and secret of signed in User
                 twitter_login = user.social_auth.get(provider='twitter')
                 access_secret = twitter_login.access_token.get('oauth_token_secret')
                 access_token = twitter_login.access_token.get('oauth_token')
-                consumer_key = SOCIAL_AUTH_TWITTER_KEY
-                consumer_secret = SOCIAL_AUTH_TWITTER_SECRET
-                auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+                auth = tweepy.OAuthHandler(consumer_key=SOCIAL_AUTH_TWITTER_KEY,
+                                           consumer_secret=SOCIAL_AUTH_TWITTER_SECRET)
                 auth.set_access_token(access_token, access_secret)
                 api = tweepy.API(auth, wait_on_rate_limit=True, )
 
-                screen_name = api.me().screen_name
-                link_to_user_twitter_account = "https://twitter.com/" + screen_name
+                link_to_user_twitter_account = "https://twitter.com/" + api.me().screen_name
                 full_link_to_tweet = link_to_user_twitter_account + "/status/"
+
+                list_of_tweet_objects = []
+                list_of_retweet_objects = []
+                number_of_tweets_in_report = 0
+                number_of_retweets_and_likes_in_report = 0
+                full_link_to_source_page_of_retweet = connection.twitter_link
 
                 f.write("Twitter Campaign\n")
                 f.write("Twitter: {}\n".format(link_to_user_twitter_account))
@@ -190,146 +194,106 @@ def create_reports(request, start_date, end_date, day_of_week):
 
                 f.write("\nTweets\n")
 
-                tweets_list = []
-                retweets_and_likes_list = []
+                for tweet in tweepy.Cursor(api.user_timeline, user=api.me().screen_name).items():
+                    if (tweet.created_at >= start_date_datetime_object) \
+                            and (tweet.created_at < end_date_datetime_object):
+                        if hasattr(tweet, 'quoted_status'):  # if message added by user to retweet
+                            full_link_to_source_of_retweet = "https://twitter.com/" + \
+                                                             tweet.quoted_status.user.screen_name
+                        elif hasattr(tweet, 'retweeted_status'):  # if retweet WITHOUT message added by user
+                            full_link_to_source_of_retweet = "https://twitter.com/" + \
+                                                             tweet.retweeted_status.user.screen_name
+                        else:
+                            full_link_to_source_of_retweet = None
 
-                if connection.report_type == "simple":
-                    str_line_to_write = "{}\n"
-                elif connection.report_type == "numbered":
-                    str_line_to_write = "{}. {}\n"
-                else:
-                    str_line_to_write = "{} - {:%d.%m}: {}\n"
+                        for hashtag in tweet.entities['hashtags']:
+                            if hashtag['text'] == connection.hash_tag:
+                                list_of_tweet_objects.append(tweet)
+                                break
 
-                if connection.report_type == "simple":
-                    for tweet in tweepy.Cursor(api.user_timeline, user=screen_name).items():
-                        if (tweet.created_at >= start_date_datetime_object) \
-                                and (tweet.created_at < end_date_datetime_object):
-                            if hasattr(tweet, 'quoted_status'):
-                                full_link_to_source_of_retweet = tweet.quoted_status.user.screen_name
-                            elif hasattr(tweet, 'retweeted_status'):
-                                full_link_to_source_of_retweet = tweet.retweeted_status.user.screen_name
-                            else:
-                                full_link_to_source_of_retweet = None
+                        # connection.twitter_link --- not None
+                        if connection.twitter_link == full_link_to_source_of_retweet:
+                            list_of_retweet_objects.append(tweet)
 
-                            if full_link_to_source_of_retweet:
-                                full_link_to_source_of_retweet = "https://twitter.com/" + full_link_to_source_of_retweet
-
-                            has_this_tweet_hashtag_from_connection = False
-                            for hashtag in tweet.entities['hashtags']:
-                                if hashtag['text'] == connection.hash_tag:
-                                    has_this_tweet_hashtag_from_connection = True
-
-                            if has_this_tweet_hashtag_from_connection:
-                                tweets_list.append(full_link_to_tweet + str(tweet.id))
-
-                            # connection.twitter_link --- not None
-                            if connection.twitter_link == full_link_to_source_of_retweet:
-                                if hasattr(tweet, 'retweeted_status'):
-                                    full_link_to_source_of_retweet += "/status/" + tweet.retweeted_status.id_str
-                                else:
-                                    full_link_to_source_of_retweet += "/status/" + tweet.quoted_status.id_str
-
-                                retweets_and_likes_list.append(full_link_to_source_of_retweet)
-
-                elif connection.report_type == "numbered":
-                    number_of_tweets_in_report = 0
-                    number_of_retweets_and_likes_in_report = 0
-                    for tweet in tweepy.Cursor(api.user_timeline, user=screen_name).items():
-                        if (tweet.created_at >= start_date_datetime_object) \
-                                and (tweet.created_at < end_date_datetime_object):
-                            if hasattr(tweet, 'quoted_status'):
-                                full_link_to_source_of_retweet = tweet.quoted_status.user.screen_name
-                            elif hasattr(tweet, 'retweeted_status'):
-                                full_link_to_source_of_retweet = tweet.retweeted_status.user.screen_name
-                            else:
-                                full_link_to_source_of_retweet = None
-
-                            if full_link_to_source_of_retweet:
-                                full_link_to_source_of_retweet = "https://twitter.com/" + full_link_to_source_of_retweet
-
-                            has_this_tweet_hashtag_from_connection = False
-                            for hashtag in tweet.entities['hashtags']:
-                                if hashtag['text'] == connection.hash_tag:
-                                    has_this_tweet_hashtag_from_connection = True
-
-                            if has_this_tweet_hashtag_from_connection:
-                                number_of_tweets_in_report += 1
-                                tweets_list.append(str_line_to_write.format(number_of_tweets_in_report,
-                                                                            full_link_to_tweet + str(tweet.id)))
-
-                            # add all Retweets
-                            # connection.twitter_link --- not None
-                            if connection.twitter_link == full_link_to_source_of_retweet:
-                                number_of_retweets_and_likes_in_report += 1
-                                if hasattr(tweet, 'retweeted_status'):
-                                    full_link_to_source_of_retweet += "/status/" + tweet.retweeted_status.id_str
-                                else:
-                                    full_link_to_source_of_retweet += "/status/" + tweet.quoted_status.id_str
-
-                                retweets_and_likes_list.append(str_line_to_write.format(
-                                    number_of_retweets_and_likes_in_report, full_link_to_source_of_retweet))
-                else:
-                    number_of_tweets_in_report = 0
-                    number_of_retweets_and_likes_in_report = 0
-                    for tweet in tweepy.Cursor(api.user_timeline, user=screen_name, ).items():
-
-                        if (tweet.created_at >= start_date_datetime_object) \
-                                and (tweet.created_at < end_date_datetime_object):
-                            if hasattr(tweet, 'quoted_status'):
-                                full_link_to_source_of_retweet = tweet.quoted_status.user.screen_name
-                            elif hasattr(tweet, 'retweeted_status'):
-                                full_link_to_source_of_retweet = tweet.retweeted_status.user.screen_name
-                            else:
-                                full_link_to_source_of_retweet = None
-
-                            if full_link_to_source_of_retweet:
-                                full_link_to_source_of_retweet = "https://twitter.com/" + full_link_to_source_of_retweet
-                            has_this_tweet_hashtag_from_connection = False
-                            for hashtag in tweet.entities['hashtags']:
-                                if hashtag['text'] == connection.hash_tag:
-                                    has_this_tweet_hashtag_from_connection = True
-
-                            if has_this_tweet_hashtag_from_connection:
-                                number_of_tweets_in_report += 1
-
-                                tweets_list.append(str_line_to_write.format(
-                                    number_of_tweets_in_report, tweet.created_at, full_link_to_tweet + str(tweet.id)))
-
-                            # add all Retweets
-                            # connection.twitter_link --- not None
-                            if connection.twitter_link == full_link_to_source_of_retweet:
-                                number_of_retweets_and_likes_in_report += 1
-                                if hasattr(tweet, 'retweeted_status'):
-                                    full_link_to_source_of_retweet += "/status/" + tweet.retweeted_status.id_str
-                                else:
-                                    # if tweet quoted_status is True
-                                    full_link_to_source_of_retweet += "/status/" + tweet.quoted_status.id_str
-                                retweets_and_likes_list.append(str_line_to_write.format(
-                                    number_of_retweets_and_likes_in_report, tweet.created_at,
-                                    full_link_to_source_of_retweet))
-
-                # write all tweets to 'Tweets' section of report
-                for line in tweets_list:
-                    f.write(line)
-                f.write("\n\nRetweets and Likes\n")
+                # check connection.report_type
+                # and according to it choose which format of str_line to use and what to write
+                # write all tweets to 'Tweets' section of report &
                 # write all Retweets(We need only retweets!)
                 # to 'Retweets and Likes'(Yes! Name of section is another:) section of report
-                for line in retweets_and_likes_list:
-                    f.write(line)
+                if connection.report_type == "simple":
+                    str_line_to_write = "{}\n"
 
+                    for tweet in list_of_tweet_objects:
+                        f.write(str_line_to_write.format(full_link_to_tweet + str(tweet.id)))
+
+                    f.write("\n\nRetweets and Likes\n")
+
+                    for retweet in list_of_retweet_objects:
+                        number_of_retweets_and_likes_in_report += 1
+                        full_link_to_retweet = \
+                            get_full_link_of_retweet_in_source_page(
+                                retweet=retweet, full_link_to_source_page_of_retweet=full_link_to_source_page_of_retweet
+                            )  # use this function to get link
+                        f.write(str_line_to_write.format(full_link_to_retweet))
+
+                elif connection.report_type == "numbered":
+                    str_line_to_write = "{}. {}\n"
+
+                    for tweet in list_of_tweet_objects:
+                        number_of_tweets_in_report += 1
+                        f.write(str_line_to_write.format(number_of_tweets_in_report,
+                                                         full_link_to_tweet + str(tweet.id)))
+
+                    f.write("\n\nRetweets and Likes\n")
+
+                    for retweet in list_of_retweet_objects:
+                        number_of_retweets_and_likes_in_report += 1
+                        full_link_to_retweet = \
+                            get_full_link_of_retweet_in_source_page(
+                                retweet=retweet, full_link_to_source_page_of_retweet=full_link_to_source_page_of_retweet
+                            )  # use this function to get link
+                        f.write(str_line_to_write.format(number_of_retweets_and_likes_in_report, full_link_to_retweet))
+
+                else:  # connection.report_type == "full"
+                    str_line_to_write = "{} - {:%d.%m}: {}\n"
+
+                    for tweet in list_of_tweet_objects:
+                        number_of_tweets_in_report += 1
+                        f.write(str_line_to_write.format(number_of_tweets_in_report,
+                                                         tweet.created_at, full_link_to_tweet + str(tweet.id)))
+
+                    f.write("\n\nRetweets and Likes\n")
+
+                    for retweet in list_of_retweet_objects:
+                        number_of_retweets_and_likes_in_report += 1
+                        full_link_to_retweet = \
+                            get_full_link_of_retweet_in_source_page(
+                                retweet=retweet, full_link_to_source_page_of_retweet=full_link_to_source_page_of_retweet
+                            )  # use this function to get link
+                        f.write(str_line_to_write.format(number_of_retweets_and_likes_in_report, retweet.created_at,
+                                                         full_link_to_retweet))
+
+            # making report Facebook(parsing user Facebook page)
             if connection.facebook_link:
                 # Connect to Facebook API using signed in User access token
                 facebook_login = user.social_auth.get(provider='facebook')
                 access_token = facebook_login.extra_data['access_token']
 
                 graph = facebook.GraphAPI(access_token, version="2.7")
+
                 # specify all arguments(in our case only fields which we require)
                 # which API object should use for connection to Facebook API
-                args = {'fields': 'message,parent_id,created_time'}
+
+                # convert start and end dates to Unix time format
+                # to use it for parsing Facebook(to use since&until fields calling API)
+                fields = "message,parent_id,created_time"
+                since_unixtime = time.mktime(start_date_datetime_object.timetuple())
+                until_unixtime = time.mktime(end_date_datetime_object.timetuple())
+                args = {'fields': fields, 'since': since_unixtime, "until": until_unixtime}
                 posts = graph.get_connections(id=facebook_login.uid, connection_name='posts', **args)
 
                 if connection.twitter_link:
-                    f.write("\n\n-----------------\n")
+                    f.write("\n\n-----------------\n\n")
                 f.write("Facebook Campaign\n")
                 f.write("Facebook: {}\n".format(user.account.facebook_link))
                 f.write("Followers: {}\n".format(user.account.total_count_of_followers_on_facebook))
@@ -337,189 +301,94 @@ def create_reports(request, start_date, end_date, day_of_week):
                     f.write("Number on the spreadsheet: {}\n".format(connection.number_in_table_facebook))
                 f.write("\nPosts\n")
 
-                posts_list = []
-                reposts_and_likes_list = []
+                list_of_post_objects = []
+                list_of_repost_and_shares_objects = []
+                number_of_posts_in_report = 0
+                number_of_reposts_and_shares_in_report = 0
 
-                if connection.report_type == "simple":
-                    str_line_to_write = "{}\n"
-                elif connection.report_type == "numbered":
-                    str_line_to_write = "{}. {}\n"
-                else:
-                    str_line_to_write = "{} - {:%d.%m}: {}\n"
-
-                # Wrap this block in a while loop so we can keep paginating requests until
-                # finished.
-                if connection.report_type == "simple":
-                    while True:
-                        try:
-                            # Perform some action on each post in the collection we receive from
-                            # Facebook.
-                            for post in posts['data']:
-                                # convert 'created_time' to datetime object and
-                                # skip part with timezones in datetime obj to compare with datetime objects without tz
-                                creation_time_datetime_object_with_tz = parse(post['created_time'])
-                                creation_time_datetime_str = \
-                                    creation_time_datetime_object_with_tz.strftime("%d.%m.%Y")
-                                creation_time_datetime_object = \
-                                    datetime.datetime.strptime(creation_time_datetime_str, '%d.%m.%Y')
-
-                                if (creation_time_datetime_object >= start_date_datetime_object) \
-                                        and (creation_time_datetime_object < end_date_datetime_object):
-
-                                    list_of_all_hash_tags = []
-                                    try:
-                                        if post['parent_id'].split('_')[0] == connection.facebook_link:
-                                            reposts_and_likes_list.append(
-                                                str_line_to_write.format("https://www.facebook.com/" + post['id']))
-                                    except KeyError:
-                                        pass
-                                    try:
-                                        if post['message']:
-                                            list_of_all_hash_tags = re.findall(r"#(\w+)", post['message'])
-                                    except KeyError:
-                                        pass
-                                    if connection.hash_tag in list_of_all_hash_tags:
-                                        posts_list.append(
-                                            str_line_to_write.format("https://www.facebook.com/" + post['id']))
-                            # Attempt to make a request to the next page of data, if it exists.
-                            posts = requests.get(posts['paging']['next']).json()
-                        except KeyError:
-                            # When there are no more pages (['paging']['next']), break from the
-                            # loop and end the script.
-                            break
-                elif connection.report_type == "numbered":
-                        number_of_posts_in_report = 0
-                        number_of_reposts_and_shares_in_report = 0
-                        while True:
-                            try:
-                                # Perform some action on each post in the collection we receive from
-                                # Facebook.
-                                for post in posts['data']:
-                                    # convert 'created_time' to datetime object and
-                                    # skip part with timezones in datetime object
-                                    # to compare with datetime objects without tz
-                                    creation_time_datetime_object_with_tz = parse(post['created_time'])
-                                    creation_time_datetime_str = \
-                                        creation_time_datetime_object_with_tz.strftime("%d.%m.%Y")
-                                    creation_time_datetime_object = \
-                                        datetime.datetime.strptime(creation_time_datetime_str, '%d.%m.%Y')
-
-                                    if (creation_time_datetime_object >= start_date_datetime_object) \
-                                            and (creation_time_datetime_object < end_date_datetime_object):
-
-                                        list_of_all_hash_tags = []
-                                        try:
-                                            if post['parent_id'].split('_')[0] == connection.facebook_link:
-                                                number_of_reposts_and_shares_in_report += 1
-                                                reposts_and_likes_list.append(str_line_to_write.format(
-                                                    number_of_reposts_and_shares_in_report,
-                                                    "https://www.facebook.com/" + post['id']))
-                                        except KeyError:
-                                            pass
-                                        try:
-                                            if post['message']:
-                                                list_of_all_hash_tags = re.findall(r"#(\w+)", post['message'])
-                                        except KeyError:
-                                            pass
-                                        if connection.hash_tag in list_of_all_hash_tags:
-                                            number_of_posts_in_report += 1
-                                            posts_list.append(str_line_to_write.format(
-                                                number_of_posts_in_report, "https://www.facebook.com/" + post['id']))
-                                # Attempt to make a request to the next page of data, if it exists.
-                                posts = requests.get(posts['paging']['next']).json()
-                            except KeyError:
-                                # When there are no more pages (['paging']['next']), break from the
-                                # loop and end the script.
-                                break
-                else:
-                        number_of_posts_in_report = 0
-                        number_of_reposts_and_shares_in_report = 0
-                        while True:
-                            try:
-                                # Perform some action on each post in the collection we receive from
-                                # Facebook.
-                                for post in posts['data']:
-                                    # convert 'created_time' to datetime object and
-                                    # skip part with timezones in datetime obj
-                                    # to compare with datetime objects without tz
-                                    creation_time_datetime_object_with_tz = parse(post['created_time'])
-                                    creation_time_datetime_str = \
-                                        creation_time_datetime_object_with_tz.strftime("%d.%m.%Y")
-                                    creation_time_datetime_object = \
-                                        datetime.datetime.strptime(creation_time_datetime_str, '%d.%m.%Y')
-
-                                    if (creation_time_datetime_object >= start_date_datetime_object) \
-                                            and (creation_time_datetime_object < end_date_datetime_object):
-
-                                        list_of_all_hash_tags = []
-                                        try:
-                                            if post['parent_id'].split('_')[0] == connection.facebook_link:
-                                                number_of_reposts_and_shares_in_report += 1
-                                                reposts_and_likes_list.append(str_line_to_write.format(
-                                                    number_of_reposts_and_shares_in_report,
-                                                    creation_time_datetime_object,
-                                                    "https://www.facebook.com/" + post['id']))
-                                        except KeyError:
-                                            pass
-                                        try:
-                                            if post['message']:
-                                                list_of_all_hash_tags = re.findall(r"#(\w+)", post['message'])
-                                        except KeyError:
-                                            pass
-                                        if connection.hash_tag in list_of_all_hash_tags:
-                                            number_of_posts_in_report += 1
-                                            posts_list.append(str_line_to_write.format(
-                                                number_of_posts_in_report, creation_time_datetime_object,
-                                                "https://www.facebook.com/" + post['id']))
-                                # Attempt to make a request to the next page of data, if it exists.
-                                posts = requests.get(posts['paging']['next']).json()
-                            except KeyError:
-                                # When there are no more pages (['paging']['next']), break from the
-                                # loop and end the script.
-                                break
                 while True:
                     try:
                         # Perform some action on each post in the collection we receive from
                         # Facebook.
                         for post in posts['data']:
-                            # convert 'created_time' to datetime object and
-                            # skip part with timezones in datetime object to compare with datetime objects without tz
-                            creation_time_datetime_object_with_tz = parse(post['created_time'])
-                            creation_time_datetime_str = \
-                                creation_time_datetime_object_with_tz.strftime("%d.%m.%Y")
-                            creation_time_datetime_object = \
-                                datetime.datetime.strptime(creation_time_datetime_str, '%d.%m.%Y')
+                            try:
+                                # parent_id looks like - 11111111_99999999
+                                # first part - id of user(owner of reposted status), second - post_id
+                                if post['parent_id'].split('_')[0] == connection.facebook_link:
+                                    list_of_repost_and_shares_objects.append(post)
+                            except KeyError:
+                                pass
+                            try:
+                                if post['message']:  # get full message and search where for hashtag
+                                    container_of_found_hash_tag = re.findall(r"#" + connection.hash_tag,
+                                                                             post['message'])
+                                    if container_of_found_hash_tag:
+                                        list_of_post_objects.append(post)
+                            except KeyError:
+                                pass
 
-                            if (creation_time_datetime_object >= start_date_datetime_object) \
-                                    and (creation_time_datetime_object < end_date_datetime_object):
-
-                                list_of_all_hash_tags = []
-                                try:
-                                    if post['parent_id'].split('_')[0] == connection.facebook_link:
-                                        reposts_and_likes_list.append("https://www.facebook.com/" + post['id'])
-                                except KeyError:
-                                    pass
-                                try:
-                                    if post['message']:
-                                        list_of_all_hash_tags = re.findall(r"#(\w+)", post['message'])
-                                except KeyError:
-                                    pass
-                                if connection.hash_tag in list_of_all_hash_tags:
-                                    posts_list.append("https://www.facebook.com/" + post['id'])
                         # Attempt to make a request to the next page of data, if it exists.
                         posts = requests.get(posts['paging']['next']).json()
                     except KeyError:
                         # When there are no more pages (['paging']['next']), break from the
                         # loop and end the script.
                         break
-                # write all posts to 'Posts' section of report
-                for line in posts_list:
-                    f.write(line)
-                f.write("\n\nReposts and Shares\n")
-                # write all Reposts(We need only reposts!)
+
+                # check connection.report_type
+                # and according to it choose which format of str_line to use and what to write
+                # write all posts to 'Posts' section of report &
+                # write all Reposts and Shares
                 # to 'Reposts and Shares' section of report
-                for line in reposts_and_likes_list:
-                    f.write(line)
+                if connection.report_type == "simple":
+                    str_line_to_write = "{}\n"
+                    for post in list_of_post_objects:
+                        f.write(str_line_to_write.format("https://www.facebook.com/" + post['id']))
+                    f.write("\n\nReposts and Shares\n")
+
+                    for repost in list_of_repost_and_shares_objects:
+                        f.write(str_line_to_write.format(
+                            "https://www.facebook.com/" + repost['id']))
+                elif connection.report_type == "numbered":
+                    str_line_to_write = "{}. {}\n"
+                    for post in list_of_post_objects:
+                        number_of_posts_in_report += 1
+                        f.write(str_line_to_write.format(number_of_posts_in_report,
+                                                         "https://www.facebook.com/" + post['id']))
+                    f.write("\n\nReposts and Shares\n")
+
+                    for repost in list_of_repost_and_shares_objects:
+                        number_of_reposts_and_shares_in_report += 1
+                        f.write(str_line_to_write.format(number_of_reposts_and_shares_in_report,
+                                                         "https://www.facebook.com/" + repost['id']))
+                else:  # connection.report_type == "full"
+                    str_line_to_write = "{} - {:%d.%m}: {}\n"
+                    for post in list_of_post_objects:
+                        number_of_posts_in_report += 1
+                        # convert 'created_time' to datetime object and
+                        # skip part with timezones in datetime object to compare with datetime objects without tz
+                        creation_time_datetime_object_with_tz = parse(post['created_time'])
+                        creation_time_datetime_str = \
+                            creation_time_datetime_object_with_tz.strftime("%d.%m.%Y")
+                        creation_time_datetime_object = \
+                            datetime.datetime.strptime(creation_time_datetime_str, '%d.%m.%Y')
+
+                        f.write(str_line_to_write.format(number_of_posts_in_report, creation_time_datetime_object,
+                                                         "https://www.facebook.com/" + post['id']))
+                    f.write("\n\nReposts and Shares\n")
+
+                    for repost in list_of_repost_and_shares_objects:
+                        number_of_reposts_and_shares_in_report += 1
+                        # convert 'created_time' to datetime object and
+                        # skip part with timezones in datetime object to compare with datetime objects without tz
+                        creation_time_datetime_object_with_tz = parse(repost['created_time'])
+                        creation_time_datetime_str = \
+                            creation_time_datetime_object_with_tz.strftime("%d.%m.%Y")
+                        creation_time_datetime_object = \
+                            datetime.datetime.strptime(creation_time_datetime_str, '%d.%m.%Y')
+
+                        f.write(str_line_to_write.format(number_of_reposts_and_shares_in_report,
+                                                         creation_time_datetime_object,
+                                                         "https://www.facebook.com/" + repost['id']))
             f.close()
 
             report = Report(
@@ -547,8 +416,18 @@ def download_file(request, filename):
 
 
 @login_required(login_url='/login/')
-@csrf_exempt
 def delete_report(request, report_id=None):
     instance = Report.objects.filter(id=report_id)
     instance.delete()
     return HttpResponseRedirect(reverse('report:ShowReports'))
+
+
+# Use this function to get full link of retweet in page from which user retweeted status in Twitter & minimize code
+def get_full_link_of_retweet_in_source_page(retweet, full_link_to_source_page_of_retweet):
+    if hasattr(retweet, 'retweeted_status'):
+        full_link_to_retweet = full_link_to_source_page_of_retweet + \
+                               "/status/" + retweet.retweeted_status.id_str
+    else:  # if tweet quoted_status is True
+        full_link_to_retweet = full_link_to_source_page_of_retweet + \
+                               "/status/" + retweet.quoted_status.id_str
+    return full_link_to_retweet

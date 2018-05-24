@@ -11,7 +11,6 @@ from connection.models import Connection
 
 
 @login_required(login_url='/login/')
-@csrf_exempt
 def show_connections(request):
     all_connections = Connection.objects.filter(user=request.user).order_by('-created_at', 'hash_tag')
 
@@ -51,7 +50,6 @@ def show_connections(request):
 
 
 @login_required(login_url='/login/')
-@csrf_exempt
 def main_page(request):
     return render(request, "report_maker/main_page.html", {
             'request': request,
@@ -96,7 +94,6 @@ def edit_connection(request, connection_id=None):
 
 
 @login_required(login_url='/login/')
-@csrf_exempt
 def delete_connection(request, connection_id=None):
     instance = Connection.objects.filter(id=connection_id)
     instance.delete()
