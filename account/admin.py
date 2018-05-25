@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from social_django.admin import Association, Nonce, UserSocialAuth
 
 from account.models import Account
 
@@ -97,3 +98,9 @@ admin.site.add_action(UserAdmin.unblock_user, name='Розблокувати')
 admin.site.unregister(User)
 admin.site.unregister(Group)
 admin.site.register(User, UserAdmin)
+# Remove Association, Nonce and UserSocialAuth(from social_django) from AdminPanel
+admin.site.unregister(Association)
+admin.site.unregister(Nonce)
+admin.site.unregister(UserSocialAuth)
+
+
