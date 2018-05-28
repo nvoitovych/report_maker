@@ -23,8 +23,7 @@ from social_django.models import UserSocialAuth
 from connection.models import Connection
 from report.forms import CustomReportForm
 from report.models import Report
-from report_maker.settings import SOCIAL_AUTH_TWITTER_KEY, SOCIAL_AUTH_TWITTER_SECRET
-
+from report_maker.settings import SOCIAL_AUTH_TWITTER_KEY, SOCIAL_AUTH_TWITTER_SECRET, MEDIA_ROOT
 
 DAY_OF_REPORT__CHOICES = {
     "mon": "Понеділок",
@@ -408,7 +407,7 @@ def create_reports(request, start_date, end_date, day_of_week):
 
 @login_required(login_url='/login/')
 def download_file(request, filename):
-    path = "media/reports/" + request.user.username + '_' + str(request.user.pk) + "/"
+    path = MEDIA_ROOT + "/reports/" + request.user.username + '_' + str(request.user.pk) + "/"
     data = open(path + filename, "rb").read()
     response = HttpResponse(data, content_type='application/vnd')
     response['Content-Length'] = os.path.getsize(path + filename)
