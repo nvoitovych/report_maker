@@ -11,6 +11,7 @@ from connection.models import Connection
 
 
 @login_required(login_url='/login/')
+@csrf_exempt
 def show_connections(request):
     all_connections = Connection.objects.filter(user=request.user).order_by('-created_at', 'hash_tag')
 
