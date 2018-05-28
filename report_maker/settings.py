@@ -25,7 +25,7 @@ SECRET_KEY = 's)r&fcx)7r@*ljuy)$lt+p+75bw5s8$p71l#(hh_c20$&&+wvl'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['shellyshelly.pythonanywhere.com', ]
 
 
 LOGIN_URL = 'login'
