@@ -26,7 +26,7 @@ with open(BASE_DIR + '/secret_key.txt') as f:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['https://www.shellyshelly.pythonanywhere.com']
+ALLOWED_HOSTS = ['https://www.shellyshelly.pythonanywhere.com', ]
 
 
 LOGIN_URL = 'login'
@@ -167,4 +167,3 @@ SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Force HTTPS in the final URIs
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
-
