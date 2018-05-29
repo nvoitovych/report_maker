@@ -47,8 +47,6 @@ INSTALLED_APPS = [
     'connection',
     'report_maker',
     'social_django',
-
-    'django_extensions',  # using for development process
     'facebook',
 ]
 
