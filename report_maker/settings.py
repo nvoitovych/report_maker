@@ -151,11 +151,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-SOCIAL_AUTH_FACEBOOK_KEY = '183334605652923'  # App ID
-SOCIAL_AUTH_FACEBOOK_SECRET = 'fcae16b12d0210588c1c063d6526fbed'  # App Secret
+with open(BASE_DIR + '/facebook_app_settings.txt') as f:
+    SOCIAL_AUTH_FACEBOOK_KEY = f.readline().strip()  # App ID
+    SOCIAL_AUTH_FACEBOOK_SECRET = f.readline().strip()  # App Secret
 
-SOCIAL_AUTH_TWITTER_KEY = '85tlTgCiA8zrQDTxXDwPuNdEy'
-SOCIAL_AUTH_TWITTER_SECRET = '1axQ15ohlmF0USKOTm5bZLApZP2XnLujr7np0SJ0aqmQPvYUPj'
+with open(BASE_DIR + '/twitter_app_settings.txt') as f:
+    SOCIAL_AUTH_TWITTER_KEY = f.readline().strip()  # read line and skip sign of new line "\n"
+    SOCIAL_AUTH_TWITTER_SECRET = f.readline().strip()  # read line and skip sign of new line "\n"
 
 
 SOCIAL_AUTH_LOGIN_ERROR_URL = 'main_page'
