@@ -9,6 +9,7 @@ django-extensions==2.0.7 # for running server with SSL
 facebook-sdk==2.0.0  # require: certifi-2018.4.16 chardet-3.0.4 idna-2.6 requests-2.18.4 urllib3-1.22
 idna==2.6  # required for 'facebook-sdk==2.0.0'
 oauthlib==2.0.7  # required for 'tweepy==3.6.0'
+psycopg2==2.7.4  # for connection to PostgreSQL
 pycparser==2.18  # required for 'cffi'
 PyJWT==1.6.1  # required for 'social-auth-app-django==2.1.0'
 pyOpenSSL==17.5.0  # for running server with SSL
