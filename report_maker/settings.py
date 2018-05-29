@@ -97,8 +97,12 @@ WSGI_APPLICATION = 'report_maker.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'report_maker_db',  # change to db name
+        'USER': 'report_maker_user',  # change to username of db owner
+        'PASSWORD': 'jeferson97',  # change to real password of db
+        'HOST': 'localhost',  # Set to empty string for localhost.
+        'PORT': '5432',  # Set to empty string for default.
     }
 }
 
