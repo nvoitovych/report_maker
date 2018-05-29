@@ -24,9 +24,9 @@ with open(BASE_DIR + '/secret_key.txt') as f:
     SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://www.shellyshelly.pythonanywhere.com']
 
 
 LOGIN_URL = 'login'
@@ -169,6 +169,4 @@ SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Force HTTPS in the final URIs
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
-# Use this server address as default using
-# './manage.py runserver_plus --cert /tmp/cert' command in terminal during development process
-RUNSERVERPLUS_SERVER_ADDRESS_PORT = '127.0.0.1:9000'
+
