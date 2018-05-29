@@ -1,11 +1,17 @@
+asn1crypto==0.24.0  # required for 'cryptography'
 certifi==2018.4.16  # required for 'facebook-sdk==2.0.0'
+cffi==1.11.5  # required for 'PyOpenSSL'
 chardet==3.0.4  # required for 'facebook-sdk==2.0.0'
+cryptography==2.2.2  # required for 'PyOpenSSL'
 defusedxml==0.5.0  # required for 'social-auth-app-django==2.1.0'
 Django==2.0.4
+django-extensions==2.0.7 # for running server with SSL
 facebook-sdk==2.0.0  # require: certifi-2018.4.16 chardet-3.0.4 idna-2.6 requests-2.18.4 urllib3-1.22
 idna==2.6  # required for 'facebook-sdk==2.0.0'
 oauthlib==2.0.7  # required for 'tweepy==3.6.0'
+pycparser==2.18  # required for 'cffi'
 PyJWT==1.6.1  # required for 'social-auth-app-django==2.1.0'
+pyOpenSSL==17.5.0  # for running server with SSL
 PySocks==1.6.8  # required for 'tweepy==3.6.0'
 python-dateutil==2.7.3  # required for: 'from dateutil.parser import parse' function
 python3-openid==3.1.0  # required for 'social-auth-app-django==2.1.0'
@@ -17,3 +23,4 @@ social-auth-app-django==2.1.0  # require: defusedxml, python3-openid, PyJWT, soc
 social-auth-core==1.7.0  # required for 'social-auth-app-django==2.1.0'
 tweepy==3.6.0  # require: six, PySocks, oauthlib, requests-oauthlib
 urllib3==1.22  # required for 'facebook-sdk==2.0.0'
+Werkzeug==0.14.1  # for running server with SSL
