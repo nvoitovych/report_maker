@@ -20,12 +20,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 's)r&fcx)7r@*ljuy)$lt+p+75bw5s8$p71l#(hh_c20$&&+wvl'
+with open(BASE_DIR + '/secret_key.txt') as f:
+    SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['shellyshelly.pythonanywhere.com', ]
+ALLOWED_HOSTS = []
 
 
 LOGIN_URL = 'login'
@@ -46,6 +47,8 @@ INSTALLED_APPS = [
     'connection',
     'report_maker',
     'social_django',
+
+    'django_extensions',  # using for development process
     'facebook',
 ]
 
@@ -166,3 +169,6 @@ SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Force HTTPS in the final URIs
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+# Use this server address as default using
+# './manage.py runserver_plus --cert /tmp/cert' command in terminal during development process
+RUNSERVERPLUS_SERVER_ADDRESS_PORT = '127.0.0.1:9000'
