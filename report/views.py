@@ -407,7 +407,7 @@ def create_reports(request, start_date, end_date, day_of_week):
 
 @login_required(login_url='/login/')
 def download_file(request, filename):
-    path = MEDIA_ROOT + "/reports/" + request.user.username + '_' + str(request.user.pk) + "/"
+    path = MEDIA_ROOT + "/reports/user_" + str(request.user.pk) + "/"
     data = open(path + filename, "rb").read()
     response = HttpResponse(data, content_type='application/vnd')
     response['Content-Length'] = os.path.getsize(path + filename)
