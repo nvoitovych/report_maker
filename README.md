@@ -1,4 +1,4 @@
-DEVELOPMENT INSTALLATION PROCESS
+## DEVELOPMENT INSTALLATION PROCESS
 
 # 1) create virtualenv
 # 2) activate venv
