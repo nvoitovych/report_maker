@@ -102,6 +102,7 @@ DATABASES = {
         'NAME': 'report_maker_db',
     },
     """
+
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'report_maker_db',
