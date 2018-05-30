@@ -47,5 +47,7 @@ Example of tree:
 123qwe456rty
 qwerty
 
-# 12) ./manage.py migrate
-# 13) ./manage.py createsuperuser
+
+# 12) Create secret_key.txt in project_name dir and add secret_key of project.
+# 13) ./manage.py migrate
+# 14) ./manage.py createsuperuser
