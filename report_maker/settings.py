@@ -96,6 +96,7 @@ WSGI_APPLICATION = 'report_maker.wsgi.application'
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 DATABASES = {
+    """
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'report_maker_db',  # change to db name
@@ -103,6 +104,13 @@ DATABASES = {
         'PASSWORD': 'jeferson97',  # change to real password of db
         'HOST': 'localhost',  # Set to empty string for localhost.
         'PORT': '5432',  # Set to empty string for default.
+    },
+    """
+    'default': {
+        'ENGINE': 'mysql.connector.django',
+        'OPTIONS': {
+            'read_default_file': BASE_DIR + '/my.cnf',
+        },
     }
 }
 
