@@ -26,14 +26,7 @@ sudo apt-get -y install build-essential libpq-dev python-dev
 # 7) Install the PostgreSQL Server:
 sudo apt-get -y install postgresql postgresql-contrib
 
-# 7*) Install MySQL Server:
-sudo apt-get install mysql-server mysql-client
-sudo apt-get install python3-dev libmysqlclient-dev build-essential
-
 # 8) Enter in psql
-
-# 8*) Enter in mysql
-mysql -u root -p
 
 # 9) Create user and db in psql:
 
@@ -44,22 +37,6 @@ alter role report_maker_user set default_transaction_isolation to 'read committe
 alter role report_maker_user set timezone to 'UTC';
 
 create database report_maker_db owner report_maker_user;
-
-# 9*) Create DB in mysql, create user and change owner of DB:
-CREATE DATABASE 'someapp' DEFAULT CHARACTER SET utf8 DEFAULT COLLATE
-
-mysql> CREATE USER 'django'@'localhost' IDENTIFIED BY 'password';
-mysql> GRANT ALL PRIVILEGES ON 'someapp'.* TO 'django'@'localhost';
-mysql> FLUSH PRIVILEGES;
-
-# 10) Create my.cnf file in BASE_DIR with .
-"my.cnf" --- filename
-
-[client]
-database = someapp
-user = django
-password = PASSWORD
-default-character-set = utf8
 
 # 9) Exit from psql:
 
