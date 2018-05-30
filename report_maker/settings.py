@@ -96,12 +96,13 @@ WSGI_APPLICATION = 'report_maker.wsgi.application'
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 DATABASES = {
+    """
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'report_maker_db',
     },
-
-    'production': {
+    """
+    'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'report_maker_db',
         'USER': 'report_maker_user',
