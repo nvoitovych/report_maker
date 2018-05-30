@@ -6,20 +6,6 @@
 
 pip install -r requirements_dev.txt
 
-# 4*) Install MySQL
-sudo apt-get install mysql-server mysql-client
-
-# 5*) Enter in mysql
-mysql -u root -p
-
-# 6*) Create db
-CREATE DATABASE report_maker_db DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
-
-# 7*) Create user for DB and exit from mysql
-CREATE USER 'report_maker_user'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON report_maker_db.* TO 'report_maker_user'@'localhost';
-FLUSH PRIVILEGES;
-
 # 4) install postgresql:
 sudo apt-get install postgresql
 
