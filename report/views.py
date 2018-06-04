@@ -415,10 +415,33 @@ def download_file(request, filename):
 
 
 @login_required(login_url='/login/')
+def download_all_reports(request):
+    """
+    path = MEDIA_ROOT + "/reports/user_" + str(request.user.pk) + "/"
+    data = open(path + filename, "rb").read()
+    response = HttpResponse(data, content_type='application/vnd')
+    response['Content-Length'] = os.path.getsize(path + filename)
+    """
+    return request
+
+
+@login_required(login_url='/login/')
 def delete_report(request, report_id=None):
     instance = Report.objects.filter(id=report_id)
     instance.delete()
     return HttpResponseRedirect(reverse('report:ShowReports'))
+
+
+@login_required(login_url='/login/')
+def delete_all_reports(request):
+    reports = Report.objects.filter(user=request.user)
+    for report in reports:
+        report.delete()
+    return HttpResponseRedirect(reverse('report:ShowReports'))
+
+
+def privacy_policy(request):
+    return render_to_response(template_name='report_maker/privacypolicy.htm')
 
 
 # Use this function to get full link of retweet in page from which user retweeted status in Twitter & minimize code
