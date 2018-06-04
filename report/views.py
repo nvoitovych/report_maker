@@ -2,6 +2,8 @@ import datetime
 import os
 import re
 import time
+import zipfile
+from io import BytesIO
 
 from dateutil.parser import parse
 
@@ -416,13 +418,44 @@ def download_file(request, filename):
 
 @login_required(login_url='/login/')
 def download_all_reports(request):
-    """
+    reports = Report.objects.filter(user=request.user)
+    filenames = []
     path = MEDIA_ROOT + "/reports/user_" + str(request.user.pk) + "/"
-    data = open(path + filename, "rb").read()
-    response = HttpResponse(data, content_type='application/vnd')
-    response['Content-Length'] = os.path.getsize(path + filename)
-    """
-    return request
+    # Files (local path) to put in the .zip
+    for report in reports:
+        filenames.append(path + report.name)
+
+    if not filenames:
+        return HttpResponseRedirect(reverse('report:ShowReports'), )
+
+    # Folder name in ZIP archive which contains the above files
+    # E.g [thearchive.zip]/somefiles/file2.txt
+    zip_subdir = "reports"
+    zip_filename = "%s.zip" % zip_subdir
+
+    # Open StringIO to grab in-memory ZIP contents
+    s = BytesIO()
+
+    # The zip compressor
+    zf = zipfile.ZipFile(s, "w")
+
+    for fpath in filenames:
+        # Calculate path for file in zip
+        fdir, fname = os.path.split(fpath)
+        zip_path = os.path.join(zip_subdir, fname)
+
+        # Add file, at correct path
+        zf.write(fpath, zip_path)
+
+    # Must close zip for all contents to be written
+    zf.close()
+
+    # Grab ZIP file from in-memory, make response with correct MIME-type
+    resp = HttpResponse(s.getvalue(), content_type="application/x-zip-compressed")
+    # ..and correct content-disposition
+    resp['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
+
+    return resp
 
 
 @login_required(login_url='/login/')
