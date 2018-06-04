@@ -42,7 +42,7 @@ def show_reports(request):
     all_reports = Report.objects.filter(user=request.user).order_by('-created_at', 'name')
 
     now = timezone.now()
-    paginator = Paginator(all_reports, 5)
+    paginator = Paginator(all_reports, 50)
     page = request.GET.get('page', 1)
 
     try:
