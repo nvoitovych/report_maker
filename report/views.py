@@ -1,5 +1,5 @@
 import datetime
-from io import StringIO, BytesIO
+from io import BytesIO
 import os
 import re
 import time
