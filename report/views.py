@@ -459,14 +459,6 @@ def download_all_reports(request):
     return resp
 
 
-"""
-path = MEDIA_ROOT + "/reports/user_" + str(request.user.pk) + "/"
-data = open(path + filename, "rb").read()
-response = HttpResponse(data, content_type='application/vnd')
-response['Content-Length'] = os.path.getsize(path + filename)
-"""
-
-
 @login_required(login_url='/login/')
 def delete_report(request, report_id=None):
     instance = Report.objects.filter(id=report_id)
