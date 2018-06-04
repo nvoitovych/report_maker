@@ -40,9 +40,9 @@
                 <a href="{% url 'report:DownloadAllReports' %}" class="btn btn-outline-primary">Download all reports</a>
                 <br><br>
                 <a href="{% url 'report:DeleteAllReports' %}" class="btn btn-outline-danger">DELETE all reports</a>
-                <br><br>
 
                 {% if all_reports %}
+                    <br><br>
                     <table class="table table-striped table-hover" id="connection_list_table">
                         <thead>
                             <tr>
