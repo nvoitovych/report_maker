@@ -1,7 +1,9 @@
 import datetime
+import io
 import os
 import re
 import time
+import zipfile
 
 from dateutil.parser import parse
 
@@ -391,12 +393,13 @@ def create_reports(request, start_date, end_date, day_of_week):
             f.close()
 
             report = Report(
-                connection=connection,
                 user=user,
-                name=f.name,  # name report as file with report(hash_tag + date range)
+                connection=connection,
+                name=f.name,  # name reports as file with reports in zip archive (name: reports_<date range>.zip)
                 file=f,
             )
             report.save()
+
             # if temporary file exists, delete it
             # file with report is uploaded to db of reports
             if os.path.isfile(f.name):
@@ -415,10 +418,33 @@ def download_file(request, filename):
 
 
 @login_required(login_url='/login/')
+def download_all_reports(request):
+    """
+    path = MEDIA_ROOT + "/reports/user_" + str(request.user.pk) + "/"
+    data = open(path + filename, "rb").read()
+    response = HttpResponse(data, content_type='application/vnd')
+    response['Content-Length'] = os.path.getsize(path + filename)
+    """
+    return request
+
+
+@login_required(login_url='/login/')
 def delete_report(request, report_id=None):
     instance = Report.objects.filter(id=report_id)
     instance.delete()
     return HttpResponseRedirect(reverse('report:ShowReports'))
+
+
+@login_required(login_url='/login/')
+def delete_all_reports(request):
+    reports = Report.objects.filter(user=request.user)
+    for report in reports:
+        report.delete()
+    return HttpResponseRedirect(reverse('report:ShowReports'))
+
+
+def privacy_policy(request):
+    return render_to_response(template_name='report_maker/privacypolicy.htm')
 
 
 # Use this function to get full link of retweet in page from which user retweeted status in Twitter & minimize code
