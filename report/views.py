@@ -196,8 +196,8 @@ def create_reports(request, start_date, end_date, day_of_week):
                 f.write("\nTweets\n")
 
                 for tweet in tweepy.Cursor(api.user_timeline, user=api.me().screen_name).items():
-                    if (tweet.created_at >= start_date_datetime_object) \
-                            and (tweet.created_at < end_date_datetime_object):
+                    if (tweet.created_at > start_date_datetime_object) \
+                            and (tweet.created_at <= end_date_datetime_object):
                         is_retweet = False
 
                         if hasattr(tweet, 'quoted_status'):  # if message added by user to retweet

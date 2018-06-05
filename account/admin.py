@@ -98,6 +98,7 @@ admin.site.add_action(UserAdmin.unblock_user, name='Розблокувати')
 admin.site.unregister(User)
 admin.site.unregister(Group)
 admin.site.register(User, UserAdmin)
+#admin.site.register(User)
 # Remove Association, Nonce and UserSocialAuth(from social_django) from AdminPanel
 admin.site.unregister(Association)
 admin.site.unregister(Nonce)
