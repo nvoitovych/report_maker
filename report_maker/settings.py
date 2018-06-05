@@ -100,7 +100,7 @@ WSGI_APPLICATION = 'report_maker.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'report_maker_db',
+        'NAME': os.path.join(BASE_DIR, 'report_maker_db.sqlite3'),
     },
 
     'production': {
