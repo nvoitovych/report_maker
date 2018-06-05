@@ -198,17 +198,21 @@ def create_reports(request, start_date, end_date, day_of_week):
                 for tweet in tweepy.Cursor(api.user_timeline, user=api.me().screen_name).items():
                     if (tweet.created_at >= start_date_datetime_object) \
                             and (tweet.created_at < end_date_datetime_object):
+                        is_retweet = False
+
                         if hasattr(tweet, 'quoted_status'):  # if message added by user to retweet
                             full_link_to_source_of_retweet = "https://twitter.com/" + \
                                                              tweet.quoted_status.user.screen_name
+                            is_retweet = True
                         elif hasattr(tweet, 'retweeted_status'):  # if retweet WITHOUT message added by user
                             full_link_to_source_of_retweet = "https://twitter.com/" + \
                                                              tweet.retweeted_status.user.screen_name
+                            is_retweet = True
                         else:
                             full_link_to_source_of_retweet = None
 
                         for hashtag in tweet.entities['hashtags']:
-                            if hashtag['text'] == connection.hash_tag:
+                            if not is_retweet and hashtag['text'] == connection.hash_tag:
                                 list_of_tweet_objects.append(tweet)
                                 break
 
