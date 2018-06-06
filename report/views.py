@@ -348,8 +348,8 @@ def create_reports(request, start_date, end_date, day_of_week):
 
                             try:
                                 if post['message']:  # get full message and search where for hashtag
-                                    container_of_found_hash_tag = re.findall(r"#" + connection.hash_tag,
-                                                                             post['message'])
+                                    container_of_found_hash_tag = re.findall(r"#" + connection.hash_tag.casefold(),
+                                                                             post['message'].casefold())
                                     # if current post is not share or re-post add it ti list of posts with hash tag
                                     if container_of_found_hash_tag and not is_share:
                                         list_of_post_objects.append(post)
