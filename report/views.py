@@ -195,9 +195,10 @@ def create_reports(request, start_date, end_date, day_of_week):
 
                 f.write("\nTweets\n")
 
-                for tweet in tweepy.Cursor(api.user_timeline, user=api.me().screen_name).items():
-                    if (tweet.created_at > start_date_datetime_object) \
-                            and (tweet.created_at <= end_date_datetime_object):
+                for tweet in tweepy.Cursor(api.user_timeline, user=api.me().screen_name, tweet_mode="extended").items():
+                    created_at = datetime.datetime(tweet.created_at.year, tweet.created_at.month, tweet.created_at.day,)
+                    if (created_at > start_date_datetime_object) \
+                            and (created_at <= end_date_datetime_object):
                         is_retweet = False
 
                         if hasattr(tweet, 'quoted_status'):  # if message added by user to retweet
@@ -212,12 +213,14 @@ def create_reports(request, start_date, end_date, day_of_week):
                             full_link_to_source_of_retweet = None
 
                         for hashtag in tweet.entities['hashtags']:
-                            if not is_retweet and hashtag['text'] == connection.hash_tag:
+                            # use casefold() to do case insensitive matching
+                            # casefold better than lower() `cause work fine with characters like this: "Maße"
+                            if not is_retweet and hashtag['text'].casefold() == connection.hash_tag.casefold():
                                 list_of_tweet_objects.append(tweet)
                                 break
 
                         # connection.twitter_link --- not None
-                        if (connection.twitter_link == full_link_to_source_of_retweet):
+                        if connection.twitter_link == full_link_to_source_of_retweet:
                             list_of_retweet_objects.append(tweet)
 
                 # check connection.report_type
@@ -284,18 +287,35 @@ def create_reports(request, start_date, end_date, day_of_week):
                 facebook_login = user.social_auth.get(provider='facebook')
                 access_token = facebook_login.extra_data['access_token']
 
-                graph = facebook.GraphAPI(access_token, version="2.7")
-
-                # specify all arguments(in our case only fields which we require)
-                # which API object should use for connection to Facebook API
+                graph = facebook.GraphAPI(access_token=access_token, version="2.7")
 
                 # convert start and end dates to Unix time format
                 # to use it for parsing Facebook(to use since&until fields calling API)
                 fields = "message,parent_id,created_time"
+                end_date_datetime_object += datetime.timedelta(days=1)  # add 1 day to include all posts during end_date
                 since_unixtime = time.mktime(start_date_datetime_object.timetuple())
                 until_unixtime = time.mktime(end_date_datetime_object.timetuple())
+
+                # specify all arguments(in our case only fields which we require)
+                # which API object should use for connection to Facebook API
                 args = {'fields': fields, 'since': since_unixtime, "until": until_unixtime}
-                posts = graph.get_connections(id=facebook_login.uid, connection_name='posts', **args)
+                posts = graph.get_connections(id='me', connection_name='posts', **args)
+
+                profile_permissions = graph.get_connections(id='me', connection_name='permissions', )['data']
+
+                for permission in profile_permissions:
+                    if permission['permission'] == 'user_posts' and permission['status'] == 'granted':
+                        break
+                    else:
+                        return HttpResponseRedirect(reverse('account:AccountUpdateWithLoginErrors',
+                                                            kwargs={
+                                                                'user_id': request.user.pk,
+                                                                'login_to_facebook_error':
+                                                                    'Grand permission to view user posts!',
+                                                                'login_to_twitter_error': login_to_twitter_error
+                                                            }
+                                                            )
+                                                    )
 
                 if connection.twitter_link:
                     f.write("\n\n-----------------\n\n")
@@ -316,18 +336,22 @@ def create_reports(request, start_date, end_date, day_of_week):
                         # Perform some action on each post in the collection we receive from
                         # Facebook.
                         for post in posts['data']:
+                            is_share = False
                             try:
                                 # parent_id looks like - 11111111_99999999
                                 # first part - id of user(owner of reposted status), second - post_id
                                 if post['parent_id'].split('_')[0] == connection.facebook_link:
                                     list_of_repost_and_shares_objects.append(post)
+                                    is_share = True
                             except KeyError:
                                 pass
+
                             try:
                                 if post['message']:  # get full message and search where for hashtag
                                     container_of_found_hash_tag = re.findall(r"#" + connection.hash_tag,
                                                                              post['message'])
-                                    if container_of_found_hash_tag:
+                                    # if current post is not share or re-post add it ti list of posts with hash tag
+                                    if container_of_found_hash_tag and not is_share:
                                         list_of_post_objects.append(post)
                             except KeyError:
                                 pass
