@@ -157,11 +157,11 @@ def create_reports(request, start_date, end_date, day_of_week):
 
             f.write("Period: {} - {}\n\n".format(start_date, end_date))
             if user.account.show_eth_wallet_in_report:
-                f.write("Ether: {}".format(user.account.eth_wallet))
+                f.write("Ether: {}\n".format(user.account.eth_wallet))
             if user.account.show_link_to_bitcointalk_profile_in_report:
-                f.write("BitcoinTalk Profile Link: {}".format(user.account.link_to_bitcointalk_profile))
+                f.write("BitcoinTalk Profile Link: {}\n".format(user.account.link_to_bitcointalk_profile))
             if user.account.show_nickname_on_bitcointalk_in_report:
-                f.write("BitcoinTalk Username: {}".format(user.account.nickname_on_bitcointalk))
+                f.write("BitcoinTalk Username: {}\n".format(user.account.nickname_on_bitcointalk))
             if user.account.show_link_to_telegram_accoun_in_report:
                 f.write("Telegram Profile Link: {}\n".format(user.account.link_to_telegram_account))
 
