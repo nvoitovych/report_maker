@@ -171,6 +171,8 @@ with open(BASE_DIR + '/twitter_app_settings.txt') as f:
     SOCIAL_AUTH_TWITTER_SECRET = f.readline().strip()  # read line and skip sign of new line "\n"
 
 
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['user_posts']
+
 SOCIAL_AUTH_LOGIN_ERROR_URL = 'main_page'
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'main_page'
 SOCIAL_AUTH_RAISE_EXCEPTIONS = False
