@@ -418,6 +418,7 @@ def create_reports(request, start_date, end_date, day_of_week):
                         f.write(str_line_to_write.format(number_of_reposts_and_shares_in_report,
                                                          creation_time_datetime_object,
                                                          "https://www.facebook.com/" + repost['id']))
+
             f.close()
 
             report = Report(
