@@ -220,7 +220,7 @@ def create_reports(request, start_date, end_date, day_of_week):
                                 break
 
                         # connection.twitter_link --- not None
-                        if connection.twitter_link == full_link_to_source_of_retweet:
+                        if connection.twitter_link.casefold() == full_link_to_source_of_retweet.casefold():
                             list_of_retweet_objects.append(tweet)
 
                 # check connection.report_type
