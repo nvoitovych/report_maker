@@ -210,7 +210,7 @@ def create_reports(request, start_date, end_date, day_of_week):
                                                              tweet.retweeted_status.user.screen_name
                             is_retweet = True
                         else:
-                            full_link_to_source_of_retweet = None
+                            full_link_to_source_of_retweet = ""
 
                         for hashtag in tweet.entities['hashtags']:
                             # use casefold() to do case insensitive matching
