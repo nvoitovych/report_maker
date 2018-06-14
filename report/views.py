@@ -197,7 +197,7 @@ def create_reports(request, start_date, end_date, day_of_week):
 
                 for tweet in tweepy.Cursor(api.user_timeline, user=api.me().screen_name, tweet_mode="extended").items():
                     created_at = datetime.datetime(tweet.created_at.year, tweet.created_at.month, tweet.created_at.day,)
-                    if (created_at > start_date_datetime_object) \
+                    if (created_at >= start_date_datetime_object) \
                             and (created_at <= end_date_datetime_object):
                         is_retweet = False
 
