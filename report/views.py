@@ -155,7 +155,7 @@ def create_reports(request, start_date, end_date, day_of_week):
             # --- add date ranges to make difference between file names
             f = open(filename, "w+")
 
-            f.write("Period: {} - {}\n\n".format(start_date, end_date))
+            f.write("Week - {}-{}\n\n".format(start_date, end_date))
             if user.account.show_eth_wallet_in_report:
                 f.write("Ether: {}\n".format(user.account.eth_wallet))
             if user.account.show_link_to_bitcointalk_profile_in_report:
@@ -219,8 +219,8 @@ def create_reports(request, start_date, end_date, day_of_week):
                                 list_of_tweet_objects.append(tweet)
                                 break
 
-                        # connection.twitter_link --- not None
-                        if is_retweet and connection.twitter_link.casefold() == full_link_to_source_of_retweet.casefold():
+                        # connection.twitter_link --- not empty
+                        if connection.twitter_link.casefold() == full_link_to_source_of_retweet.casefold():
                             list_of_retweet_objects.append(tweet)
 
                 # check connection.report_type
