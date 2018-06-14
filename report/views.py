@@ -1,9 +1,9 @@
 import datetime
-from io import BytesIO
 import os
 import re
 import time
 import zipfile
+from io import BytesIO
 
 from dateutil.parser import parse
 
@@ -44,7 +44,7 @@ def show_reports(request):
     all_reports = Report.objects.filter(user=request.user).order_by('-created_at', 'name')
 
     now = timezone.now()
-    paginator = Paginator(all_reports, 5)
+    paginator = Paginator(all_reports, 50)
     page = request.GET.get('page', 1)
 
     try:
@@ -155,13 +155,13 @@ def create_reports(request, start_date, end_date, day_of_week):
             # --- add date ranges to make difference between file names
             f = open(filename, "w+")
 
-            f.write("Period: {} - {}\n\n".format(start_date, end_date))
+            f.write("Week - {}-{}\n\n".format(start_date, end_date))
             if user.account.show_eth_wallet_in_report:
-                f.write("Ether: {}".format(user.account.eth_wallet))
+                f.write("Ether: {}\n".format(user.account.eth_wallet))
             if user.account.show_link_to_bitcointalk_profile_in_report:
-                f.write("BitcoinTalk Profile Link: {}".format(user.account.link_to_bitcointalk_profile))
+                f.write("BitcoinTalk Profile Link: {}\n".format(user.account.link_to_bitcointalk_profile))
             if user.account.show_nickname_on_bitcointalk_in_report:
-                f.write("BitcoinTalk Username: {}".format(user.account.nickname_on_bitcointalk))
+                f.write("BitcoinTalk Username: {}\n".format(user.account.nickname_on_bitcointalk))
             if user.account.show_link_to_telegram_accoun_in_report:
                 f.write("Telegram Profile Link: {}\n".format(user.account.link_to_telegram_account))
 
@@ -219,7 +219,7 @@ def create_reports(request, start_date, end_date, day_of_week):
                                 list_of_tweet_objects.append(tweet)
                                 break
 
-                        # connection.twitter_link --- not None
+                        # connection.twitter_link --- not empty
                         if connection.twitter_link.casefold() == full_link_to_source_of_retweet.casefold():
                             list_of_retweet_objects.append(tweet)
 
@@ -418,6 +418,7 @@ def create_reports(request, start_date, end_date, day_of_week):
                         f.write(str_line_to_write.format(number_of_reposts_and_shares_in_report,
                                                          creation_time_datetime_object,
                                                          "https://www.facebook.com/" + repost['id']))
+
             f.close()
 
             report = Report(
