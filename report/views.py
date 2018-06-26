@@ -147,7 +147,7 @@ def create_reports(request, start_date, end_date, day_of_week):
 
             # skip making the report of connection if it's already exists
             #  --- TIP: file name with report is unique
-            if Report.objects.filter(name=filename).exists():
+            if Report.objects.filter(name=filename, user=user).exists():
                 continue
 
             # create report file with file_name = hash_tag(name of connection) + date range
