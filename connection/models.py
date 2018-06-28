@@ -6,13 +6,13 @@ class Connection(models.Model):
     user = models.ForeignKey(
         to=User,
         on_delete=models.CASCADE,
-        verbose_name='Користувач',
+        verbose_name='User',
     )
     hash_tag = models.CharField(
         max_length=256,
         blank=False,
         null=False,
-        verbose_name='Хеш тег',
+        verbose_name='Hash tag',
     )
     facebook_link = models.CharField(
         max_length=256,
@@ -27,14 +27,14 @@ class Connection(models.Model):
         verbose_name='Twitter',
     )
     REPORT_TYPE__CHOICES = (
-        ("simple", "Звичайний"),
-        ("numbered", "Пронумерований"),
-        ("full", "Повний"),
+        ("simple", "Simple"),
+        ("numbered", "Numbered"),
+        ("full", "Full"),
     )
     report_type = models.CharField(
         max_length=30,
         choices=REPORT_TYPE__CHOICES,
-        verbose_name="Тип звіту",
+        verbose_name="Type of report",
         blank=False,
     )
     number_in_table_facebook = models.PositiveIntegerField(
@@ -46,25 +46,25 @@ class Connection(models.Model):
         null=True,
     )
     DAY_OF_REPORT__CHOICES = (
-        ("mon", "Понеділок"),
-        ("tues", "Вівторок"),
-        ("wed", "Середа"),
-        ("thurs", "Четвер"),
-        ("fri", "П'ятниця"),
-        ("sat", "Субота"),
-        ("sun", "Неділя"),
+        ("mon", "Monday"),
+        ("tues", "Tuesday"),
+        ("wed", "Wednesday"),
+        ("thurs", "Thursday"),
+        ("fri", "Friday"),
+        ("sat", "Saturday"),
+        ("sun", "Sunday"),
     )
     day_of_report = models.CharField(
         max_length=30,
         choices=DAY_OF_REPORT__CHOICES,
-        verbose_name="День тижня для звіту",
+        verbose_name="Day of week for report",
         blank=False,
     )
 
     created_at = models.DateTimeField(
         auto_now_add=True,
         blank=True,
-        verbose_name='Дата створення',
+        verbose_name='Date of creation',
     )
 
     class Meta:

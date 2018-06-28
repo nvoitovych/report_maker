@@ -8,17 +8,17 @@ class Account(models.Model):
     user = models.OneToOneField(
         to=User,
         on_delete=models.CASCADE,
-        verbose_name='Користувач',
+        verbose_name='User',
     )
     is_online = models.BooleanField(
         default=False,
-        verbose_name='Онлайн',
+        verbose_name='Online',
     )
     mobile_phone_number = models.CharField(
         max_length=256,
         blank=True,
         null=True,
-        verbose_name='Мобільний номер',
+        verbose_name='Mobile number',
     )
     facebook_link = models.CharField(
         max_length=256,
@@ -36,27 +36,27 @@ class Account(models.Model):
         default=0,
         blank=True,
         null=True,
-        verbose_name='К-сть підписників на Facebook',
+        verbose_name='Amount of followers on Facebook',
     )
     eth_wallet = models.CharField(
         max_length=256,
         blank=True,
         null=True,
-        verbose_name='Ethereum гаманець',
+        verbose_name='Ethereum гwallet',
     )
     show_eth_wallet_in_report = models.BooleanField(
         default=False,
-        verbose_name="Відображати Ethereum гаманець у звіті?",
+        verbose_name="Display Ethereum wallet in report?",
     )
     link_to_bitcointalk_profile = models.CharField(
         max_length=256,
         blank=True,
         null=True,
-        verbose_name='BitcoinTalk Профіль',
+        verbose_name='BitcoinTalk Profile',
     )
     show_link_to_bitcointalk_profile_in_report = models.BooleanField(
         default=False,
-        verbose_name="Відображати посилання на BitcoinTalk аккаунт у звіті?",
+        verbose_name="Display link on BitcoinTalk Account in report?",
     )
     nickname_on_bitcointalk = models.CharField(
         max_length=256,
@@ -66,7 +66,7 @@ class Account(models.Model):
     )
     show_nickname_on_bitcointalk_in_report = models.BooleanField(
         default=False,
-        verbose_name="Відображати Nickname на BitcoinTalk у звіті?",
+        verbose_name="Display Nickname on BitcoinTalk in report?",
     )
     link_to_telegram_account = models.CharField(
         max_length=256,
@@ -76,7 +76,7 @@ class Account(models.Model):
     )
     show_link_to_telegram_accoun_in_report = models.BooleanField(
         default=False,
-        verbose_name="Відображати Telegram Account у звіті?",
+        verbose_name="Display Telegram Account in report?",
     )
     start_date_of_license = models.DateField(
         blank=True,

@@ -27,8 +27,8 @@
                 {% endif %}
 
                 <br>
-                Ім'я користувача: {{ request.user.username }} <br><br>
-                Термін дії ліцензії: {{ request.user.account.start_date_of_license }} - {{ request.user.account.end_date_of_license }}<br><br>
+                User name: {{ request.user.username }} <br><br>
+                Period of license: {{ request.user.account.start_date_of_license }} - {{ request.user.account.end_date_of_license }}<br><br>
                 <form action="." method="POST" class="padding">
                     {% csrf_token %}
                     <div class="form-group">

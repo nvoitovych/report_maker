@@ -28,13 +28,13 @@ from report.models import Report
 from report_maker.settings import SOCIAL_AUTH_TWITTER_KEY, SOCIAL_AUTH_TWITTER_SECRET, MEDIA_ROOT
 
 DAY_OF_REPORT__CHOICES = {
-    "mon": "Понеділок",
-    "tues": "Вівторок",
-    "wed": "Середа",
-    "thurs": "Четвер",
-    "fri": "П'ятниця",
-    "sat": "Субота",
-    "sun": "Неділя",
+    "mon": "Monday",
+    "tues": "Tuesday",
+    "wed": "Wednesday",
+    "thurs": "Thursday",
+    "fri": "Friday",
+    "sat": "Saturday",
+    "sun": "Sunday",
 }
 
 
@@ -84,6 +84,10 @@ def show_reports(request):
 @login_required(login_url='/login/')
 @csrf_exempt
 def create_reports(request, start_date, end_date, day_of_week):
+    ###
+    start_time = time.time()
+    ###
+
     # convert start_date and end_date from string to datetime.datetime object
     start_date_datetime_object = datetime.datetime.strptime(start_date, '%d.%m.%Y')
     end_date_datetime_object = datetime.datetime.strptime(end_date, '%d.%m.%Y')
@@ -138,7 +142,86 @@ def create_reports(request, start_date, end_date, day_of_week):
     # if user is signed in to all social networks that are required to each report
     # - start to making reports for all connections with mentioned day_of_report
     else:
+        #
+        print("--- Start of checking connections: %s seconds ---" % (time.time() - start_time))
+        #
         user = User.objects.get(pk=request.user.pk)
+        # in this variable we will collect all posts from FB if exists Connection with facebook link not null
+        #  --- with another words if we need to create report with posts from FB
+        all_posts_from_FB = []
+        # Check if exists Connection with facebook link not null
+        # --- with another words if we need to create report with posts from FB
+        if Connection.objects.filter(user=user, day_of_report=day_of_week).exclude(
+                facebook_link__isnull=True).exclude(facebook_link__exact='').exists():
+            #
+            print("--- Start of checking FB: %s seconds ---" % (time.time() - start_time))
+            #
+
+            # Connect to Facebook API using signed in User access token
+            facebook_login = user.social_auth.get(provider='facebook')
+            access_token = facebook_login.extra_data['access_token']
+
+            graph = facebook.GraphAPI(access_token=access_token, version="2.7")
+
+            fields = "message,parent_id,created_time"
+
+            #
+            print("--- Start of getting posts: %s seconds ---" % (time.time() - start_time))
+            #
+
+            # specify all arguments(in our case only fields which we require)
+            # which API object should use for connection to Facebook API
+            args = {'fields': fields}
+            posts = graph.get_connections(id='me', connection_name='posts', **args)
+
+            #
+            print("--- End of getting posts: %s seconds ---" % (time.time() - start_time))
+            print("--- Start of getting permissions: %s seconds ---" % (time.time() - start_time))
+            #
+
+            profile_permissions = graph.get_connections(id='me', connection_name='permissions', )['data']
+
+            #
+            print("--- End of getting permissions: %s seconds ---" % (time.time() - start_time))
+            #
+
+            """
+                            for permission in profile_permissions:
+                                print("Permission: ", permission['permission'])
+                                if permission['permission'] == 'user_posts' and permission['status'] == 'granted':
+                                    break
+                                else:
+                                    return HttpResponseRedirect(reverse('account:AccountUpdateWithLoginErrors',
+                                                                        kwargs={
+                                                                            'user_id': request.user.pk,
+                                                                            'login_to_facebook_error':
+                                                                                'Grand permission to view user posts!',
+                                                                            'login_to_twitter_error': login_to_twitter_error
+                                                                        }
+                                                                        )
+                                                                )
+            """
+            # collect all posts from FB and save them to all_posts_from_FB
+            while True:
+                try:
+                    for post in posts['data']:
+                        all_posts_from_FB.append(post)
+                    print("--- Start of getting next pagination: %s seconds ---" % (time.time() - start_time))
+                    #
+                    # Attempt to make a request to the next page of data, if it exists.
+                    posts = requests.get(posts['paging']['next']).json()
+                    #
+                    print("--- End of getting next pagination: %s seconds ---" % (time.time() - start_time))
+                    #
+                except KeyError:
+                    # When there are no more pages (['paging']['next']), break from the
+                    # loop and end the script.
+                    break
+            #
+            print("--- End of getting last pagination: %s seconds ---" % (time.time() - start_time))
+            #
+
+        print("All posts from FB: ", all_posts_from_FB)
 
         for connection in all_connections:
             name_of_file_with_report = connection.hash_tag
@@ -167,6 +250,9 @@ def create_reports(request, start_date, end_date, day_of_week):
 
             # making report Twitter(parsing user twitter page)
             if connection.twitter_link:
+                #
+                print("\n\n--- Start of checking TWITTER: %s seconds ---" % (time.time() - start_time))
+                #
                 # Connect to Twitter API using access token and secret of our app(registered in Twitter for developers)
                 # and access token and secret of signed in User
                 twitter_login = user.social_auth.get(provider='twitter')
@@ -280,42 +366,11 @@ def create_reports(request, start_date, end_date, day_of_week):
                             )  # use this function to get link
                         f.write(str_line_to_write.format(number_of_retweets_and_likes_in_report, retweet.created_at,
                                                          full_link_to_retweet))
-
+            #
+            print("--- End of TWITTER: %s seconds ---" % (time.time() - start_time))
+            #
             # making report Facebook(parsing user Facebook page)
             if connection.facebook_link:
-                # Connect to Facebook API using signed in User access token
-                facebook_login = user.social_auth.get(provider='facebook')
-                access_token = facebook_login.extra_data['access_token']
-
-                graph = facebook.GraphAPI(access_token=access_token, version="2.7")
-
-                # convert start and end dates to Unix time format
-                # to use it for parsing Facebook(to use since&until fields calling API)
-                fields = "message,parent_id,created_time"
-                end_date_datetime_object += datetime.timedelta(days=1)  # add 1 day to include all posts during end_date
-                since_unixtime = time.mktime(start_date_datetime_object.timetuple())
-                until_unixtime = time.mktime(end_date_datetime_object.timetuple())
-
-                # specify all arguments(in our case only fields which we require)
-                # which API object should use for connection to Facebook API
-                args = {'fields': fields, 'since': since_unixtime, "until": until_unixtime}
-                posts = graph.get_connections(id='me', connection_name='posts', **args)
-
-                profile_permissions = graph.get_connections(id='me', connection_name='permissions', )['data']
-
-                for permission in profile_permissions:
-                    if permission['permission'] == 'user_posts' and permission['status'] == 'granted':
-                        break
-                    else:
-                        return HttpResponseRedirect(reverse('account:AccountUpdateWithLoginErrors',
-                                                            kwargs={
-                                                                'user_id': request.user.pk,
-                                                                'login_to_facebook_error':
-                                                                    'Grand permission to view user posts!',
-                                                                'login_to_twitter_error': login_to_twitter_error
-                                                            }
-                                                            )
-                                                    )
 
                 if connection.twitter_link:
                     f.write("\n\n-----------------\n\n")
@@ -330,41 +385,41 @@ def create_reports(request, start_date, end_date, day_of_week):
                 list_of_repost_and_shares_objects = []
                 number_of_posts_in_report = 0
                 number_of_reposts_and_shares_in_report = 0
+                #
+                print("--- Start of parsing posts: %s seconds ---" % (time.time() - start_time))
+                #
 
-                while True:
-                    try:
-                        # Perform some action on each post in the collection we receive from
-                        # Facebook.
-                        for post in posts['data']:
-                            is_share = False
-                            try:
-                                # parent_id looks like - 11111111_99999999
-                                # first part - id of user(owner of reposted status), second - post_id
-                                if post['parent_id'].split('_')[0] == connection.facebook_link:
-                                    list_of_repost_and_shares_objects.append(post)
-                                    is_share = True
-                            except KeyError:
-                                pass
+                # Check is post created in certain period and have hash_tag as in Connection
+                # or re-posted from facebook_link
+                for post in all_posts_from_FB:
+                    created_time = datetime.datetime.strptime(post['created_time'], '%Y-%m-%dT%H:%M:%S+0000')
+                    created_time_datetime_object = datetime.datetime(created_time.year, created_time.month, created_time.day, )
 
-                            try:
-                                if post['message']:  # get full message and search where for hashtag
-                                    container_of_found_hash_tag = re.findall(r"#" + connection.hash_tag.casefold(),
-                                                                             post['message'].casefold())
+                    if (created_time_datetime_object >= start_date_datetime_object) \
+                            and (created_time_datetime_object <= end_date_datetime_object):
+                        is_share = False
+                        try:
+                            # parent_id looks like - 11111111_99999999
+                            # first part - id of user(owner of reposted status), second - post_id
+                            if post['parent_id'].split('_')[0] == connection.facebook_link:
+                                list_of_repost_and_shares_objects.append(post)
+                                is_share = True
+                        except KeyError:
+                            pass
 
-                                    hash_tag = '#' + connection.hash_tag
-                                    # if current post is not share or re-post add it to list of posts with hash tag
-                                    if hash_tag in container_of_found_hash_tag and not is_share:
-                                        list_of_post_objects.append(post)
-                            except KeyError:
-                                pass
+                        try:
+                            if post['message']:  # get full message and search where for hashtag
+                                container_of_found_hash_tag = re.findall(r"#(\w+)",
+                                                                         post['message'].casefold())
+                                # if current post is not share or re-post add it to list of posts with hash tag
+                                if connection.hash_tag.casefold() in container_of_found_hash_tag and not is_share:
+                                    list_of_post_objects.append(post)
+                        except KeyError:
+                            pass
 
-                        # Attempt to make a request to the next page of data, if it exists.
-                        posts = requests.get(posts['paging']['next']).json()
-                    except KeyError:
-                        # When there are no more pages (['paging']['next']), break from the
-                        # loop and end the script.
-                        break
-
+                #
+                print("--- Start of writing to file: %s seconds ---" % (time.time() - start_time))
+                #
                 # check connection.report_type
                 # and according to it choose which format of str_line to use and what to write
                 # write all posts to 'Posts' section of report &
@@ -423,6 +478,16 @@ def create_reports(request, start_date, end_date, day_of_week):
 
             f.close()
 
+            #
+            #
+            #
+            #
+            print("--- File is closed: %s seconds ---" % (time.time() - start_time))
+            #
+            #
+            #
+            #
+
             report = Report(
                 user=user,
                 connection=connection,
@@ -435,6 +500,13 @@ def create_reports(request, start_date, end_date, day_of_week):
             # file with report is uploaded to db of reports
             if os.path.isfile(f.name):
                 os.remove(f.name)
+
+            #
+            print("--- End of connection: %s seconds ---\n\n" % (time.time() - start_time))
+            #
+        #
+        print("--- End of All Connections: %s seconds ---" % (time.time() - start_time))
+        #
 
         return HttpResponseRedirect(reverse('report:ShowReports'), )
 
