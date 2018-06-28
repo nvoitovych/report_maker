@@ -171,57 +171,71 @@ def create_reports(request, start_date, end_date, day_of_week):
 
             # specify all arguments(in our case only fields which we require)
             # which API object should use for connection to Facebook API
-            args = {'fields': fields}
-            posts = graph.get_connections(id='me', connection_name='posts', **args)
+            args = {'fields': fields, 'limit': 700}
+            posts = graph.get_connections(id='me', connection_name='posts', **args,)
+
+            while True:
+                try:
+                    # Perform some action on each post in the collection we receive from
+                    # Facebook.
+                    for post in posts['data']:
+                        all_posts_from_FB.append(post)
+
+                    # Attempt to make a request to the next page of data, if it exists.
+                    posts = requests.get(posts['paging']['next']).json()
+                except KeyError:
+                    # When there are no more pages (['paging']['next']), break from the
+                    # loop and end the script.
+                    break
 
             #
             print("--- End of getting posts: %s seconds ---" % (time.time() - start_time))
             print("--- Start of getting permissions: %s seconds ---" % (time.time() - start_time))
             #
 
-            profile_permissions = graph.get_connections(id='me', connection_name='permissions', )['data']
+            # profile_permissions = graph.get_connections(id='me', connection_name='permissions', )['data']
 
             #
             print("--- End of getting permissions: %s seconds ---" % (time.time() - start_time))
             #
 
-            """
-                            for permission in profile_permissions:
-                                print("Permission: ", permission['permission'])
-                                if permission['permission'] == 'user_posts' and permission['status'] == 'granted':
-                                    break
-                                else:
-                                    return HttpResponseRedirect(reverse('account:AccountUpdateWithLoginErrors',
-                                                                        kwargs={
-                                                                            'user_id': request.user.pk,
-                                                                            'login_to_facebook_error':
-                                                                                'Grand permission to view user posts!',
-                                                                            'login_to_twitter_error': login_to_twitter_error
-                                                                        }
-                                                                        )
-                                                                )
-            """
-            # collect all posts from FB and save them to all_posts_from_FB
-            while True:
-                try:
-                    for post in posts['data']:
-                        all_posts_from_FB.append(post)
-                    print("--- Start of getting next pagination: %s seconds ---" % (time.time() - start_time))
-                    #
-                    # Attempt to make a request to the next page of data, if it exists.
-                    posts = requests.get(posts['paging']['next']).json()
-                    #
-                    print("--- End of getting next pagination: %s seconds ---" % (time.time() - start_time))
-                    #
-                except KeyError:
-                    # When there are no more pages (['paging']['next']), break from the
-                    # loop and end the script.
-                    break
+        # In this variable we will collect all posts from TWITTER if exists Connection with twitter link not null
+        #  --- with another words if we need to create report with posts from TWITTER
+        all_tweets = []
+        # next 3 variables initialize just to be sure that it exists
+        link_to_user_twitter_account = ''
+        followers_count = 0
+        full_link_to_tweet = ''
+        # Check if exists Connection with facebook link not null
+        # --- with another words if we need to create report with posts from FB
+        if Connection.objects.filter(user=user, day_of_report=day_of_week).exclude(
+                twitter_link__isnull=True).exclude(twitter_link__exact='').exists():
             #
-            print("--- End of getting last pagination: %s seconds ---" % (time.time() - start_time))
+            print("--- Start of checking TWITTER: %s seconds ---" % (time.time() - start_time))
             #
+            # Connect to Twitter API using access token and secret of our app(registered in Twitter for developers)
+            # and access token and secret of signed in User
+            twitter_login = user.social_auth.get(provider='twitter')
+            access_secret = twitter_login.access_token.get('oauth_token_secret')
+            access_token = twitter_login.access_token.get('oauth_token')
+            auth = tweepy.OAuthHandler(consumer_key=SOCIAL_AUTH_TWITTER_KEY,
+                                       consumer_secret=SOCIAL_AUTH_TWITTER_SECRET)
+            auth.set_access_token(access_token, access_secret)
+            api = tweepy.API(auth, wait_on_rate_limit=True, )
 
-        print("All posts from FB: ", all_posts_from_FB)
+            link_to_user_twitter_account = "https://twitter.com/" + user.account.twitter_username
+            full_link_to_tweet = link_to_user_twitter_account + "/status/"
+            followers_count = user.account.total_count_of_followers_on_twitter
+
+            #
+            print("\n--- START of getting all TWITTER statuses: %s seconds ---" % (time.time() - start_time))
+            #
+            tweets = tweepy.Cursor(api.user_timeline, user=user.account.twitter_username, tweet_mode="extended").items(2300)
+            for tweet in tweets:
+                all_tweets.append(tweet)
+            #
+            print("--- END of getting all TWITTER statuses: %s seconds ---\n" % (time.time() - start_time))
+            #
 
         for connection in all_connections:
             name_of_file_with_report = connection.hash_tag
@@ -251,20 +265,8 @@ def create_reports(request, start_date, end_date, day_of_week):
             # making report Twitter(parsing user twitter page)
             if connection.twitter_link:
                 #
-                print("\n\n--- Start of checking TWITTER: %s seconds ---" % (time.time() - start_time))
+                print("\n--- Start of parsing TWITTER statuses: %s seconds ---" % (time.time() - start_time))
                 #
-                # Connect to Twitter API using access token and secret of our app(registered in Twitter for developers)
-                # and access token and secret of signed in User
-                twitter_login = user.social_auth.get(provider='twitter')
-                access_secret = twitter_login.access_token.get('oauth_token_secret')
-                access_token = twitter_login.access_token.get('oauth_token')
-                auth = tweepy.OAuthHandler(consumer_key=SOCIAL_AUTH_TWITTER_KEY,
-                                           consumer_secret=SOCIAL_AUTH_TWITTER_SECRET)
-                auth.set_access_token(access_token, access_secret)
-                api = tweepy.API(auth, wait_on_rate_limit=True, )
-
-                link_to_user_twitter_account = "https://twitter.com/" + api.me().screen_name
-                full_link_to_tweet = link_to_user_twitter_account + "/status/"
 
                 list_of_tweet_objects = []
                 list_of_retweet_objects = []
@@ -274,14 +276,21 @@ def create_reports(request, start_date, end_date, day_of_week):
 
                 f.write("Twitter Campaign\n")
                 f.write("Twitter: {}\n".format(link_to_user_twitter_account))
-                f.write("Followers: {}\n".format(api.me().followers_count))
+                f.write("Followers: {}\n".format(followers_count))
 
                 if connection.number_in_table_twitter:
                     f.write("Number on the spreadsheet: {}\n".format(connection.number_in_table_twitter))
 
                 f.write("\nTweets\n")
 
-                for tweet in tweepy.Cursor(api.user_timeline, user=api.me().screen_name, tweet_mode="extended").items():
+                #
+                print("\n--- End of writing TWITTERS section to file: %s seconds ---\n" % (time.time() - start_time))
+                #
+
+                #
+                print("\n--- Start of checking all tweets: %s seconds ---" % (time.time() - start_time))
+                #
+                for tweet in all_tweets:
                     created_at = datetime.datetime(tweet.created_at.year, tweet.created_at.month, tweet.created_at.day,)
                     if (created_at >= start_date_datetime_object) \
                             and (created_at <= end_date_datetime_object):
@@ -308,6 +317,13 @@ def create_reports(request, start_date, end_date, day_of_week):
                         # connection.twitter_link --- not empty
                         if connection.twitter_link.casefold() == full_link_to_source_of_retweet.casefold():
                             list_of_retweet_objects.append(tweet)
+                #
+                print("--- End of checking all tweets: %s seconds ---\n" % (time.time() - start_time))
+                #
+
+                #
+                print("--- START of writing all tweets to FILE: %s seconds ---" % (time.time() - start_time))
+                #
 
                 # check connection.report_type
                 # and according to it choose which format of str_line to use and what to write
@@ -366,12 +382,15 @@ def create_reports(request, start_date, end_date, day_of_week):
                             )  # use this function to get link
                         f.write(str_line_to_write.format(number_of_retweets_and_likes_in_report, retweet.created_at,
                                                          full_link_to_retweet))
+
+                #
+                print("--- END of writing all tweets to FILE: %s seconds ---" % (time.time() - start_time))
+                #
             #
-            print("--- End of TWITTER: %s seconds ---" % (time.time() - start_time))
+            print("--- END of writing to file: %s seconds ---" % (time.time() - start_time))
             #
             # making report Facebook(parsing user Facebook page)
             if connection.facebook_link:
-
                 if connection.twitter_link:
                     f.write("\n\n-----------------\n\n")
                 f.write("Facebook Campaign\n")
@@ -386,7 +405,7 @@ def create_reports(request, start_date, end_date, day_of_week):
                 number_of_posts_in_report = 0
                 number_of_reposts_and_shares_in_report = 0
                 #
-                print("--- Start of parsing posts: %s seconds ---" % (time.time() - start_time))
+                print("--- Start of parsing FB posts: %s seconds ---" % (time.time() - start_time))
                 #
 
                 # Check is post created in certain period and have hash_tag as in Connection
@@ -418,7 +437,7 @@ def create_reports(request, start_date, end_date, day_of_week):
                             pass
 
                 #
-                print("--- Start of writing to file: %s seconds ---" % (time.time() - start_time))
+                print("--- Start of writing to file FB posts: %s seconds ---" % (time.time() - start_time))
                 #
                 # check connection.report_type
                 # and according to it choose which format of str_line to use and what to write
@@ -479,13 +498,7 @@ def create_reports(request, start_date, end_date, day_of_week):
             f.close()
 
             #
-            #
-            #
-            #
             print("--- File is closed: %s seconds ---" % (time.time() - start_time))
-            #
-            #
-            #
             #
 
             report = Report(
@@ -502,7 +515,7 @@ def create_reports(request, start_date, end_date, day_of_week):
                 os.remove(f.name)
 
             #
-            print("--- End of connection: %s seconds ---\n\n" % (time.time() - start_time))
+            print("--- End of connection: %s seconds ---\n" % (time.time() - start_time))
             #
         #
         print("--- End of All Connections: %s seconds ---" % (time.time() - start_time))

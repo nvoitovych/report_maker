@@ -24,13 +24,19 @@ class Account(models.Model):
         max_length=256,
         blank=True,
         null=True,
-        verbose_name='Facebook',
+        verbose_name='Facebook link',
     )
     twitter_link = models.CharField(
         max_length=256,
         blank=True,
         null=True,
-        verbose_name='Twitter',
+        verbose_name='Twitter link',
+    )
+    twitter_username = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True,
+        verbose_name='Twitter username',
     )
     total_count_of_followers_on_facebook = models.PositiveIntegerField(
         default=0,
@@ -38,11 +44,17 @@ class Account(models.Model):
         null=True,
         verbose_name='Amount of followers on Facebook',
     )
+    total_count_of_followers_on_twitter = models.PositiveIntegerField(
+        default=0,
+        blank=True,
+        null=True,
+        verbose_name='Amount of followers on Twitter',
+    )
     eth_wallet = models.CharField(
         max_length=256,
         blank=True,
         null=True,
-        verbose_name='Ethereum гwallet',
+        verbose_name='Ethereum wallet',
     )
     show_eth_wallet_in_report = models.BooleanField(
         default=False,

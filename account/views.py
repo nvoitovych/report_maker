@@ -23,6 +23,8 @@ def account_update(request, user_id):
                                                                 fields=(
                                                                     'facebook_link',
                                                                     'total_count_of_followers_on_facebook',
+                                                                    'twitter_username',
+                                                                    'total_count_of_followers_on_twitter',
                                                                     'eth_wallet',
                                                                     'show_eth_wallet_in_report',
                                                                     'link_to_bitcointalk_profile',
@@ -37,6 +39,11 @@ def account_update(request, user_id):
                                                                         attrs={
                                                                             'placeholder':
                                                                                 "https://www.facebook.com/BillGates/"
+                                                                        }),
+                                                                    'twitter_username': forms.TextInput(
+                                                                        attrs={
+                                                                            'placeholder':
+                                                                                "example_username"
                                                                         }),
                                                                 },
                                                                 can_delete=False,
@@ -91,6 +98,8 @@ def account_update_with_login_errors(request, user_id, login_to_twitter_error, l
                                                                 fields=(
                                                                     'facebook_link',
                                                                     'total_count_of_followers_on_facebook',
+                                                                    'twitter_username',
+                                                                    'total_count_of_followers_on_twitter',
                                                                     'eth_wallet',
                                                                     'show_eth_wallet_in_report',
                                                                     'link_to_bitcointalk_profile',
@@ -105,6 +114,11 @@ def account_update_with_login_errors(request, user_id, login_to_twitter_error, l
                                                                         attrs={
                                                                             'placeholder':
                                                                                 "https://www.facebook.com/BillGates/"
+                                                                        }),
+                                                                    'twitter_username': forms.TextInput(
+                                                                        attrs={
+                                                                            'placeholder':
+                                                                                "example_username"
                                                                         }),
                                                                 },
                                                                 can_delete=False,

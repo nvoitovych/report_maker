@@ -3,13 +3,13 @@ from django.forms import fields
 
 
 DAY_OF_REPORT__CHOICES = (
-    ("mon", "Понеділок"),
-    ("tues", "Вівторок"),
-    ("wed", "Середа"),
-    ("thurs", "Четвер"),
-    ("fri", "П'ятниця"),
-    ("sat", "Субота"),
-    ("sun", "Неділя"),
+    ("mon", "Monday"),
+    ("tues", "Tuesday"),
+    ("wed", "Wednesday"),
+    ("thurs", "Thursday"),
+    ("fri", "Friday"),
+    ("sat", "Saturday"),
+    ("sun", "Sunday"),
 )
 
 
