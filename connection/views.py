@@ -15,7 +15,7 @@ from connection.models import Connection
 def show_connections(request):
     all_connections = Connection.objects.filter(user=request.user).order_by('-created_at', 'hash_tag')
 
-    paginator = Paginator(all_connections, 5)
+    paginator = Paginator(all_connections, 50)
     page = request.GET.get('page', 1)
 
     try:
