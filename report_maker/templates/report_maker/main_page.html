@@ -1,4 +1,5 @@
 {% extends 'report_maker/base.html' %}
+{% load static %}
 
 {% block title %}
     Main page
@@ -11,7 +12,7 @@
             <div class="card-content" id="div-inside-div">
                 <br>
                 <div class="modal-header">
-                    <h4 class="modal-title" id="text-inside-div" >Main page</h4>
+                    <h4 class="modal-title" id="text-inside-div" >Description Of Web-Site</h4>
                 </div>
                 <br><br>
                 <div class="modal-body">
@@ -33,10 +34,9 @@
                     <p>In some projects there are such requirements to the reports, how to Specify the number in a spreadsheet. Specifying is possible as well as for twitter, and for to the facebook. If you specified a number, so, then, when you create a report, it will be automatically added.</p>
                     <p>This field is not obligatory.</p>
                     <p><strong>Type of report.</strong></p>
-                    <p>Usual, Numbered, Full.</p>
+                    <p>Simple, Numbered, Full.</p>
                     <p>Full &ndash; when the tweets/retweets/posts/reposts are numbered and their date is set.</p>
                     <p>Example:</p>
-                    <p>&nbsp;</p>
                     <p><span class="Apple-converted-space">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>1 &ndash; 23.06: https://twitter.com/***</p>
                     <p><span class="Apple-converted-space">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>2 &ndash; 22.06: https://twitter.com/***</p>
                     <p><span class="Apple-converted-space">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>3 &ndash; 21.06: https://twitter.com/***</p>
@@ -44,20 +44,13 @@
                     <ol>
                     <li>1.https://twitter.com/***</li>
                     </ol>
-                    <p>Usual &ndash; only links</p>
+                    <p>Simple &ndash; only links</p>
                     <p><span class="Apple-converted-space">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>https://twitter.com/***</p>
-                    <p>&nbsp;</p>
                     <p><strong>How to choose your own period of date for report</strong></p>
                     <p>If you need to make a report for a copula for another period(exmpl: on 2 weeks), so then select an interval using a tool, that is located a little higher. Click here:<span class="Apple-converted-space">&nbsp;</span></p>
-                    <p>IMAGE 1</p>
-                    <p>&nbsp;</p>
-                    <p>&nbsp;</p>
-                    <p>&nbsp;</p>
-                    <p>&nbsp;</p>
-                    <p>&nbsp;</p>
-                    <p>&nbsp;</p>
+                    <p><img src="{% static "report_maker/img/image_1.jpg" %}" height="90" width="600"></p>
                     <p>A calendar will be opened for the choice of date.<span class="Apple-converted-space">&nbsp;</span></p>
-                    <p><img src="/media/report_maker/">IMAGE 2</p>
+                    <p><img src="{% static "report_maker/img/image_2.jpg" %}" height="294" width="317"></p>
                     <p>At such variant reports are formed in general for all projects.</p>
                 </div>
             </div>

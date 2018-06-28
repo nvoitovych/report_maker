@@ -25,14 +25,3 @@ class CustomReportForm(forms.Form):
     day_of_report = fields.ChoiceField(
         choices=DAY_OF_REPORT__CHOICES,
     )
-
-    """
-        start_date = DateField(widget=forms.SelectDateWidget(attrs={
-        'placeholder': 'DD/MM/YYYY',
-        'class': 'date-input',
-    }))
-    end_date = DateField(widget=forms.SelectDateWidget(attrs={
-        'placeholder': 'DD/MM/YYYY',
-        'class': 'date-input',
-    }))
-    """
