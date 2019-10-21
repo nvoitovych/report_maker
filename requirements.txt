@@ -16,5 +16,5 @@ six==1.11.0  # required for 'tweepy==3.6.0'
 social-auth-app-django==2.1.0  # require: defusedxml, python3-openid, PyJWT, social-auth-core
 social-auth-core==1.7.0  # required for 'social-auth-app-django==2.1.0'
 tweepy==3.6.0  # require: six, PySocks, oauthlib, requests-oauthlib
-urllib3==1.22  # required for 'facebook-sdk==2.0.0'
+urllib3==1.24.2  # required for 'facebook-sdk==2.0.0'
 psycopg2==2.7.4  # for connection to PostgreSQL
