@@ -1,7 +1,7 @@
 certifi==2018.4.16  # required for 'facebook-sdk==2.0.0'
 chardet==3.0.4  # required for 'facebook-sdk==2.0.0'
 defusedxml==0.5.0  # required for 'social-auth-app-django==2.1.0'
-Django==2.0.4
+Django==2.2.13
 facebook-sdk==2.0.0  # require: certifi-2018.4.16 chardet-3.0.4 idna-2.6 requests-2.18.4 urllib3-1.22
 idna==2.6  # required for 'facebook-sdk==2.0.0'
 oauthlib==2.0.7  # required for 'tweepy==3.6.0'
