@@ -5,7 +5,7 @@ Django==2.0.4
 facebook-sdk==2.0.0  # require: certifi-2018.4.16 chardet-3.0.4 idna-2.6 requests-2.18.4 urllib3-1.22
 idna==2.6  # required for 'facebook-sdk==2.0.0'
 oauthlib==2.0.7  # required for 'tweepy==3.6.0'
-PyJWT==1.6.1  # required for 'social-auth-app-django==2.1.0'
+PyJWT==2.4.0  # required for 'social-auth-app-django==2.1.0'
 PySocks==1.6.8  # required for 'tweepy==3.6.0'
 python-dateutil==2.7.3  # required for: 'from dateutil.parser import parse' function
 python3-openid==3.1.0  # required for 'social-auth-app-django==2.1.0'
