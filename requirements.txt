@@ -1,4 +1,4 @@
-certifi==2018.4.16  # required for 'facebook-sdk==2.0.0'
+certifi==2022.12.7  # required for 'facebook-sdk==2.0.0'
 chardet==3.0.4  # required for 'facebook-sdk==2.0.0'
 defusedxml==0.5.0  # required for 'social-auth-app-django==2.1.0'
 Django==2.0.4
